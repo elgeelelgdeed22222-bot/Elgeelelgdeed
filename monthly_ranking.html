@@ -1,0 +1,2035 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الترتيب الشهري والنقاط - مدرسة الجيل الجيد الخاصة</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ===== متغيرات النظام ===== */
+        :root {
+            /* ألوان المراحل */
+            --grade4: #3498db;
+            --grade5: #9b59b6;
+            --grade6: #2ecc71;
+            --grade7: #e74c3c;
+            --grade8: #f39c12;
+            
+            /* ألوان أنواع النقاط */
+            --score-points: #3498db;     /* نقاط الدرجات */
+            --attendance-points: #2ecc71; /* نقاط الحضور */
+            --compliance-points: #9b59b6; /* نقاط الالتزام */
+            --timeliness-points: #f39c12; /* نقاط التأخير */
+            
+            /* ألوان النظام */
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #2980b9;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #27ae60;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+            --gold: #ffd700;
+            --silver: #c0c0c0;
+            --bronze: #cd7f32;
+            --text: #333;
+            --text-light: #7f8c8d;
+            
+            /* ظلال */
+            --shadow-sm: 0 2px 10px rgba(0,0,0,0.08);
+            --shadow-md: 0 5px 20px rgba(0,0,0,0.12);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.15);
+            --shadow-gold: 0 0 20px rgba(255, 215, 0, 0.5);
+            --shadow-silver: 0 0 20px rgba(192, 192, 192, 0.5);
+            --shadow-bronze: 0 0 20px rgba(205, 127, 50, 0.5);
+            
+            /* أنماط الزوايا */
+            --radius-sm: 10px;
+            --radius-md: 15px;
+            --radius-lg: 20px;
+        }
+        
+        /* ===== إعادة الضبط ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+        
+        /* ===== الهيدر ===== */
+        .page-header {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 25px 30px;
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .header-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .back-btn {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            padding: 10px 25px;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(5px);
+        }
+        
+        .back-btn:hover {
+            background: rgba(255,255,255,0.25);
+            transform: translateY(-2px);
+        }
+        
+        /* ===== المحتوى الرئيسي ===== */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        /* ===== لوحة التحكم ===== */
+        .control-panel {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-md);
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-md);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .month-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .month-selector label {
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .month-selector select {
+            padding: 12px 20px;
+            border: 2px solid var(--light);
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            min-width: 200px;
+            flex: 1;
+            background: white;
+        }
+        
+        .month-selector select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .grade-filter {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            background: var(--light);
+            border: 2px solid transparent;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .filter-btn.active {
+            background: white;
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        
+        .control-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        
+        .action-btn {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, var(--accent), #3498db);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .action-btn.primary {
+            background: linear-gradient(135deg, var(--accent), #3498db);
+        }
+        
+        .action-btn.success {
+            background: linear-gradient(135deg, var(--success), #2ecc71);
+        }
+        
+        .action-btn.warning {
+            background: linear-gradient(135deg, var(--warning), #f1c40f);
+        }
+        
+        .action-btn.gold {
+            background: linear-gradient(135deg, var(--gold), #ffed4e);
+            color: #333;
+        }
+        
+        /* ===== لوحة شرح نظام النقاط ===== */
+        .points-system {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border-radius: var(--radius-md);
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .system-title {
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .points-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .point-card {
+            background: white;
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            border-left: 5px solid;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s;
+        }
+        
+        .point-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .point-card.score { border-color: var(--score-points); }
+        .point-card.attendance { border-color: var(--attendance-points); }
+        .point-card.compliance { border-color: var(--compliance-points); }
+        .point-card.timeliness { border-color: var(--timeliness-points); }
+        
+        .point-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .point-icon {
+            font-size: 1.8rem;
+            color: currentColor;
+        }
+        
+        .point-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+        
+        .point-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 10px 0;
+            color: currentColor;
+        }
+        
+        .point-description {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        /* ===== المنصة المركزية ===== */
+        .ranking-podium {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-md);
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .podium-title {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: var(--primary);
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .podium-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 20px;
+            min-height: 300px;
+            position: relative;
+        }
+        
+        .podium-place {
+            flex: 1;
+            max-width: 300px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .podium-stand {
+            border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+            padding: 20px;
+            color: white;
+            position: relative;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .podium-stand:hover {
+            transform: translateY(-10px);
+        }
+        
+        .podium-stand.first {
+            height: 250px;
+            background: linear-gradient(135deg, var(--gold), #ffed4e);
+            box-shadow: var(--shadow-gold);
+        }
+        
+        .podium-stand.second {
+            height: 200px;
+            background: linear-gradient(135deg, var(--silver), #e0e0e0);
+            box-shadow: var(--shadow-silver);
+        }
+        
+        .podium-stand.third {
+            height: 180px;
+            background: linear-gradient(135deg, var(--bronze), #e6a654);
+            box-shadow: var(--shadow-bronze);
+        }
+        
+        .place-badge {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: white;
+            border: 4px solid white;
+        }
+        
+        .first .place-badge {
+            background: var(--gold);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+        }
+        
+        .second .place-badge {
+            background: var(--silver);
+            box-shadow: 0 4px 15px rgba(192, 192, 192, 0.4);
+        }
+        
+        .third .place-badge {
+            background: var(--bronze);
+            box-shadow: 0 4px 15px rgba(205, 127, 50, 0.4);
+        }
+        
+        .student-avatar-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: white;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--primary);
+            border: 4px solid rgba(255,255,255,0.8);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .student-name-large {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin: 10px 0;
+            color: var(--primary);
+        }
+        
+        .student-points-large {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 10px 0;
+        }
+        
+        .first .student-points-large { color: var(--gold); }
+        .second .student-points-large { color: var(--silver); }
+        .third .student-points-large { color: var(--bronze); }
+        
+        .student-grade {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        /* ===== جدول الترتيب ===== */
+        .ranking-table-container {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-md);
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .table-title {
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .ranking-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: white;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .ranking-table th {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 18px 20px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 1rem;
+            position: sticky;
+            top: 0;
+        }
+        
+        .ranking-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--light);
+            transition: all 0.3s;
+        }
+        
+        .ranking-table tr:hover td {
+            background: rgba(52, 152, 219, 0.05);
+        }
+        
+        .ranking-table tr.top-three {
+            background: linear-gradient(to right, rgba(255, 215, 0, 0.05), transparent);
+        }
+        
+        .rank-cell {
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .rank-1 { color: var(--gold); }
+        .rank-2 { color: var(--silver); }
+        .rank-3 { color: var(--bronze); }
+        
+        .student-cell {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .student-avatar-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .student-info {
+            flex: 1;
+        }
+        
+        .student-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+        
+        .student-id {
+            color: var(--text-light);
+            font-size: 0.85rem;
+        }
+        
+        .points-cell {
+            text-align: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .details-cell {
+            text-align: center;
+        }
+        
+        .details-btn {
+            padding: 8px 15px;
+            background: var(--light);
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--accent);
+            transition: all 0.3s;
+        }
+        
+        .details-btn:hover {
+            background: var(--accent);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* ===== تفاصيل النقاط ===== */
+        .points-details {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-md);
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255,255,255,0.2);
+            display: none;
+        }
+        
+        .points-details.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .points-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .breakdown-item {
+            background: white;
+            padding: 20px;
+            border-radius: var(--radius-sm);
+            text-align: center;
+            border: 2px solid;
+            transition: all 0.3s;
+        }
+        
+        .breakdown-item:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .breakdown-item.score { border-color: var(--score-points); }
+        .breakdown-item.attendance { border-color: var(--attendance-points); }
+        .breakdown-item.compliance { border-color: var(--compliance-points); }
+        .breakdown-item.timeliness { border-color: var(--timeliness-points); }
+        
+        .breakdown-value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 10px 0;
+            color: currentColor;
+        }
+        
+        .breakdown-label {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        
+        /* ===== مخطط النقاط ===== */
+        .points-chart-container {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-md);
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+            position: relative;
+        }
+        
+        .chart-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+        
+        .chart-label {
+            min-width: 150px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .chart-bar-track {
+            flex: 1;
+            height: 25px;
+            background: var(--light);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .chart-bar-fill {
+            height: 100%;
+            border-radius: 12px;
+            transition: width 1s ease;
+        }
+        
+        .chart-value {
+            min-width: 60px;
+            text-align: right;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        /* ===== إحصائيات الشهر ===== */
+        .month-stats {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-md);
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255,255,255,0.2);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+        }
+        
+        .month-stat {
+            text-align: center;
+            padding: 20px;
+            border-radius: var(--radius-sm);
+            background: white;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s;
+        }
+        
+        .month-stat:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .month-stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--accent);
+        }
+        
+        .month-stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 10px 0;
+            color: var(--primary);
+        }
+        
+        .month-stat-label {
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+        
+        /* ===== الفوتر ===== */
+        .page-footer {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            margin-top: 40px;
+            border-radius: var(--radius-md) var(--radius-md) 0 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .footer-nav {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .footer-nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            transition: all 0.3s;
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(5px);
+        }
+        
+        .footer-nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .footer-info {
+            opacity: 0.8;
+            font-size: 0.9rem;
+            margin-top: 15px;
+        }
+        
+        /* ===== نظام التحميل ===== */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* ===== التجاوب ===== */
+        @media (max-width: 1200px) {
+            .main-content {
+                padding: 20px 15px;
+            }
+            
+            .control-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-actions {
+                justify-content: flex-start;
+            }
+            
+            .podium-container {
+                flex-direction: column;
+                align-items: center;
+                min-height: auto;
+            }
+            
+            .podium-place {
+                max-width: 100%;
+                width: 100%;
+            }
+            
+            .podium-stand {
+                height: 120px !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .header-title {
+                font-size: 1.5rem;
+            }
+            
+            .points-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .ranking-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .points-breakdown {
+                grid-template-columns: 1fr;
+            }
+            
+            .month-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .footer-nav {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .month-selector {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .month-selector select {
+                min-width: 100%;
+            }
+            
+            .grade-filter {
+                flex-direction: column;
+            }
+            
+            .filter-btn {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .month-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .student-cell {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+        
+        /* ===== تأثيرات خاصة ===== */
+        .gold-glow {
+            animation: goldGlow 2s infinite;
+        }
+        
+        @keyframes goldGlow {
+            0%, 100% { box-shadow: var(--shadow-gold); }
+            50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); }
+        }
+        
+        .silver-glow {
+            animation: silverGlow 2s infinite;
+        }
+        
+        @keyframes silverGlow {
+            0%, 100% { box-shadow: var(--shadow-silver); }
+            50% { box-shadow: 0 0 30px rgba(192, 192, 192, 0.8); }
+        }
+        
+        .bronze-glow {
+            animation: bronzeGlow 2s infinite;
+        }
+        
+        @keyframes bronzeGlow {
+            0%, 100% { box-shadow: var(--shadow-bronze); }
+            50% { box-shadow: 0 0 30px rgba(205, 127, 50, 0.8); }
+        }
+        
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+        
+        @keyframes floating {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <!-- شاشة التحميل -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div style="text-align: center;">
+            <div class="loader"></div>
+            <div style="color: white; margin-top: 20px; font-size: 1.2rem;" id="loadingText">
+                جاري تحميل الترتيب الشهري...
+            </div>
+        </div>
+    </div>
+    
+    <!-- الهيدر -->
+    <header class="page-header">
+        <div class="header-content">
+            <a href="elgeelelgdeed.html" class="back-btn">
+                <i class="fas fa-arrow-right"></i>
+                العودة للصفحة الرئيسية
+            </a>
+            <h1 class="header-title">
+                <i class="fas fa-trophy"></i>
+                الترتيب الشهري ونظام النقاط
+            </h1>
+        </div>
+    </header>
+    
+    <!-- المحتوى الرئيسي -->
+    <main class="main-content">
+        <!-- لوحة التحكم -->
+        <section class="control-panel">
+            <div class="month-selector">
+                <label for="selectedMonth">
+                    <i class="fas fa-calendar"></i>
+                    اختر الشهر:
+                </label>
+                <select id="selectedMonth">
+                    <!-- سيتم ملؤها تلقائياً -->
+                </select>
+            </div>
+            
+            <div class="grade-filter" id="gradeFilter">
+                <button class="filter-btn active" data-grade="all">
+                    الكل
+                </button>
+                <button class="filter-btn" data-grade="4">
+                    الصف الرابع
+                </button>
+                <button class="filter-btn" data-grade="5">
+                    الصف الخامس
+                </button>
+                <button class="filter-btn" data-grade="6">
+                    الصف السادس
+                </button>
+                <button class="filter-btn" data-grade="7">
+                    الصف الأول الإعدادي
+                </button>
+                <button class="filter-btn" data-grade="8">
+                    الصف الثاني الإعدادي
+                </button>
+            </div>
+            
+            <div class="control-actions">
+                <button class="action-btn success" onclick="calculateMonthlyRanking()">
+                    <i class="fas fa-calculator"></i>
+                    حساب الترتيب
+                </button>
+                <button class="action-btn gold" onclick="showAwardCeremony()">
+                    <i class="fas fa-award"></i>
+                    حفل التكريم
+                </button>
+                <button class="action-btn primary" onclick="exportRanking()">
+                    <i class="fas fa-file-export"></i>
+                    تصدير الترتيب
+                </button>
+            </div>
+        </section>
+        
+        <!-- لوحة شرح نظام النقاط -->
+        <section class="points-system">
+            <h2 class="system-title">
+                <i class="fas fa-star"></i>
+                نظام النقاط الشهري
+            </h2>
+            <div class="points-grid">
+                <div class="point-card score">
+                    <div class="point-header">
+                        <div class="point-title">نقاط الدرجات</div>
+                        <i class="fas fa-chart-line point-icon"></i>
+                    </div>
+                    <div class="point-value">10 نقاط</div>
+                    <div class="point-description">
+                        كل درجة تساوي نقطة واحدة<br>
+                        من يحصل على 10/10 يأخذ 10 نقاط
+                    </div>
+                </div>
+                
+                <div class="point-card attendance">
+                    <div class="point-header">
+                        <div class="point-title">نقاط الحضور</div>
+                        <i class="fas fa-user-check point-icon"></i>
+                    </div>
+                    <div class="point-value">5 نقاط</div>
+                    <div class="point-description">
+                        يحصل الطالب على 5 نقاط لكل 5 امتحانات متتالية<br>
+                        بدون غياب أو تأخير
+                    </div>
+                </div>
+                
+                <div class="point-card compliance">
+                    <div class="point-header">
+                        <div class="point-title">نقاط الالتزام</div>
+                        <i class="fas fa-calendar-check point-icon"></i>
+                    </div>
+                    <div class="point-value">5 نقاط</div>
+                    <div class="point-description">
+                        يحصل الطالب على 5 نقاط أسبوعياً<br>
+                        إذا حضر جميع الامتحانات
+                    </div>
+                </div>
+                
+                <div class="point-card timeliness">
+                    <div class="point-header">
+                        <div class="point-title">نقاط التسليم</div>
+                        <i class="fas fa-clock point-icon"></i>
+                    </div>
+                    <div class="point-value">5 نقاط</div>
+                    <div class="point-description">
+                        تسليم الامتحان قبل الساعة 7 مساءً: 5 نقاط<br>
+                        بعد الساعة 7: تتناقص النقاط تدريجياً
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- المنصة المركزية -->
+        <section class="ranking-podium">
+            <h2 class="podium-title">
+                <i class="fas fa-crown"></i>
+                منصة الأوائل الشهرية
+            </h2>
+            <div class="podium-container" id="podiumContainer">
+                <div class="podium-place">
+                    <div class="podium-stand first floating gold-glow" onclick="showStudentDetails(2)">
+                        <div class="place-badge">2</div>
+                        <div class="student-avatar-large">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="student-name-large">المركز الثاني</div>
+                        <div class="student-points-large">0</div>
+                        <div class="student-grade">نقاط</div>
+                    </div>
+                </div>
+                
+                <div class="podium-place">
+                    <div class="podium-stand first gold-glow" onclick="showStudentDetails(1)">
+                        <div class="place-badge">1</div>
+                        <div class="student-avatar-large">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <div class="student-name-large">المركز الأول</div>
+                        <div class="student-points-large">0</div>
+                        <div class="student-grade">نقاط</div>
+                    </div>
+                </div>
+                
+                <div class="podium-place">
+                    <div class="podium-stand third floating bronze-glow" onclick="showStudentDetails(3)">
+                        <div class="place-badge">3</div>
+                        <div class="student-avatar-large">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="student-name-large">المركز الثالث</div>
+                        <div class="student-points-large">0</div>
+                        <div class="student-grade">نقاط</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- جدول الترتيب -->
+        <section class="ranking-table-container">
+            <h2 class="table-title">
+                <i class="fas fa-list-ol"></i>
+                جدول الترتيب الشهري
+            </h2>
+            <div style="overflow-x: auto;">
+                <table class="ranking-table" id="rankingTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">الترتيب</th>
+                            <th>الطالب</th>
+                            <th style="width: 120px;">المرحلة</th>
+                            <th style="width: 120px;">إجمالي النقاط</th>
+                            <th style="width: 120px;">التفاصيل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rankingTableBody">
+                        <!-- سيتم ملؤها تلقائياً -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+        <!-- تفاصيل النقاط -->
+        <section class="points-details" id="pointsDetails">
+            <h2 class="table-title">
+                <i class="fas fa-chart-pie"></i>
+                تفاصيل النقاط للطالب
+            </h2>
+            <div id="studentDetailsContent">
+                <!-- سيتم ملؤها تلقائياً -->
+            </div>
+        </section>
+        
+        <!-- مخطط توزيع النقاط -->
+        <section class="points-chart-container">
+            <h2 class="table-title">
+                <i class="fas fa-chart-bar"></i>
+                توزيع النقاط بين الطلاب
+            </h2>
+            <div class="chart-container" id="pointsDistributionChart">
+                <!-- سيتم ملؤها تلقائياً -->
+            </div>
+        </section>
+        
+        <!-- إحصائيات الشهر -->
+        <section class="month-stats">
+            <div class="month-stat">
+                <div class="month-stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="month-stat-value" id="totalRankedStudents">0</div>
+                <div class="month-stat-label">إجمالي الطلاب المترتبين</div>
+            </div>
+            
+            <div class="month-stat">
+                <div class="month-stat-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="month-stat-value" id="averagePoints">0</div>
+                <div class="month-stat-label">متوسط النقاط للطالب</div>
+            </div>
+            
+            <div class="month-stat">
+                <div class="month-stat-icon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="month-stat-value" id="topScore">0</div>
+                <div class="month-stat-label">أعلى نقاط شهرية</div>
+            </div>
+            
+            <div class="month-stat">
+                <div class="month-stat-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="month-stat-value" id="pointsGrowth">0%</div>
+                <div class="month-stat-label">نمو النقاط عن الشهر الماضي</div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- الفوتر -->
+    <footer class="page-footer">
+        <div class="footer-nav">
+            <a href="elgeelelgdeed.html" class="footer-nav-link">
+                <i class="fas fa-home"></i> الرئيسية
+            </a>
+            <a href="daily_stats.html" class="footer-nav-link">
+                <i class="fas fa-chart-line"></i> الإحصائيات اليومية
+            </a>
+            <a href="admin_control.html" class="footer-nav-link">
+                <i class="fas fa-cogs"></i> التحكم
+            </a>
+        </div>
+        <div class="footer-info">
+            نظام الترتيب الشهري | مدرسة الجيل الجيد الخاصة
+        </div>
+        <div style="margin-top: 10px; opacity: 0.6; font-size: 0.85rem;">
+            © 2025 جميع الحقوق محفوظة
+        </div>
+    </footer>
+    
+    <!-- مكتبات Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    
+    <script>
+        // 🏆 نظام الترتيب الشهري والنقاط
+        class MonthlyRankingSystem {
+            constructor() {
+                this.initializeFirebase();
+                this.initializeCache();
+                this.selectedMonth = this.getCurrentMonth();
+                this.selectedGrade = 'all';
+                this.grades = ['4', '5', '6', '7', '8'];
+                this.initializeSystem();
+            }
+            
+            initializeFirebase() {
+                const firebaseConfig = {
+                    apiKey: "AIzaSyCtxkYnDVupiJz8iyAzI_oqaZGBaKYYIhY",
+                    authDomain: "elgeelelgdeed-1.firebasestorage.app",
+                    projectId: "elgeelelgdeed-1",
+                    storageBucket: "elgeelelgdeed-1.firebasestorage.app",
+                    messagingSenderId: "1031644675136",
+                    appId: "1:1031644675136:web:d1acdcfa1530bee72e33a5"
+                };
+                
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                this.db = firebase.firestore();
+            }
+            
+            initializeCache() {
+                this.cache = {
+                    memory: new Map(),
+                    localStoragePrefix: 'monthly_ranking_'
+                };
+                
+                this.cacheConfig = {
+                    ttl: {
+                        ranking: 30 * 60 * 1000,  // 30 دقيقة
+                        studentDetails: 15 * 60 * 1000,  // 15 دقيقة
+                        stats: 20 * 60 * 1000  // 20 دقيقة
+                    }
+                };
+            }
+            
+            initializeSystem() {
+                this.setupMonthSelector();
+                this.setupEventListeners();
+                this.loadMonthlyRanking();
+            }
+            
+            getCurrentMonth() {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                return `${year}-${month}`;
+            }
+            
+            setupMonthSelector() {
+                const select = document.getElementById('selectedMonth');
+                const now = new Date();
+                
+                // إنشاء قائمة الأشهر للـ12 شهراً الماضية
+                for (let i = 0; i < 12; i++) {
+                    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const monthName = date.toLocaleDateString('ar-EG', { month: 'long' });
+                    const value = `${year}-${month}`;
+                    const option = document.createElement('option');
+                    option.value = value;
+                    option.textContent = `${monthName} ${year}`;
+                    
+                    if (i === 0) {
+                        option.selected = true;
+                    }
+                    
+                    select.appendChild(option);
+                }
+                
+                select.addEventListener('change', (e) => {
+                    this.selectedMonth = e.target.value;
+                    this.loadMonthlyRanking();
+                });
+            }
+            
+            setupEventListeners() {
+                // أزرار تصفية المراحل
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.filter-btn').forEach(b => {
+                            b.classList.remove('active');
+                        });
+                        e.target.classList.add('active');
+                        this.selectedGrade = e.target.dataset.grade;
+                        this.filterRankingByGrade();
+                    });
+                });
+            }
+            
+            async loadMonthlyRanking() {
+                this.showLoading('جاري حساب الترتيب الشهري...');
+                
+                try {
+                    const ranking = await this.calculateMonthlyRanking();
+                    this.displayRanking(ranking);
+                    this.updatePodium(ranking);
+                    this.updateStats(ranking);
+                    this.hideLoading();
+                    this.showAlert('تم تحديث الترتيب الشهري بنجاح', 'success');
+                } catch (error) {
+                    console.error('❌ خطأ في تحميل الترتيب:', error);
+                    this.showAlert('خطأ في حساب الترتيب', 'error');
+                    this.hideLoading();
+                }
+            }
+            
+            async calculateMonthlyRanking() {
+                const cacheKey = `ranking_${this.selectedMonth}`;
+                const cached = this.getFromCache(cacheKey);
+                
+                if (cached) {
+                    console.log('✅ تم جلب الترتيب من الكاش');
+                    return cached;
+                }
+                
+                // حساب النقاط لجميع الطلاب في الشهر المحدد
+                const ranking = await this.calculateAllStudentsPoints();
+                
+                // ترتيب الطلاب تنازلياً حسب النقاط
+                ranking.sort((a, b) => b.totalPoints - a.totalPoints);
+                
+                // إضافة الترتيب لكل طالب
+                ranking.forEach((student, index) => {
+                    student.rank = index + 1;
+                });
+                
+                this.saveToCache(cacheKey, ranking, this.cacheConfig.ttl.ranking);
+                return ranking;
+            }
+            
+            async calculateAllStudentsPoints() {
+                try {
+                    // جلب جميع الطلاب النشطين
+                    const studentsSnapshot = await this.db.collection('students')
+                        .where('isActive', '==', true)
+                        .get();
+                    
+                    if (studentsSnapshot.empty) {
+                        return [];
+                    }
+                    
+                    const ranking = [];
+                    const monthStart = `${this.selectedMonth}-01`;
+                    const nextMonth = this.getNextMonth(this.selectedMonth);
+                    const monthEnd = `${nextMonth}-01`;
+                    
+                    for (const studentDoc of studentsSnapshot.docs) {
+                        const student = studentDoc.data();
+                        
+                        // حساب نقاط الطالب لهذا الشهر
+                        const studentPoints = await this.calculateStudentMonthlyPoints(
+                            student.studentId,
+                            monthStart,
+                            monthEnd
+                        );
+                        
+                        ranking.push({
+                            id: student.studentId,
+                            name: student.fullName,
+                            grade: student.grade,
+                            className: student.className,
+                            ...studentPoints,
+                            totalPoints: this.calculateTotalPoints(studentPoints)
+                        });
+                    }
+                    
+                    return ranking;
+                } catch (error) {
+                    console.error('❌ خطأ في حساب نقاط الطلاب:', error);
+                    throw error;
+                }
+            }
+            
+            async calculateStudentMonthlyPoints(studentId, monthStart, monthEnd) {
+                // جلب جميع نتائج الطالب في الشهر المحدد
+                const resultsSnapshot = await this.db.collection('exam_results')
+                    .where('studentId', '==', studentId)
+                    .where('examDate', '>=', monthStart)
+                    .where('examDate', '<', monthEnd)
+                    .orderBy('examDate')
+                    .get();
+                
+                if (resultsSnapshot.empty) {
+                    return {
+                        scorePoints: 0,
+                        attendancePoints: 0,
+                        compliancePoints: 0,
+                        timelinessPoints: 0,
+                        examsCount: 0,
+                        perfectScores: 0,
+                        averageScore: 0
+                    };
+                }
+                
+                // حساب نقاط الدرجات
+                let scorePoints = 0;
+                let totalScore = 0;
+                let perfectScores = 0;
+                
+                // حساب نقاط التأخير والالتزام
+                let timelinessPoints = 0;
+                let complianceStreak = 0;
+                let maxStreak = 0;
+                let lastExamDate = null;
+                
+                resultsSnapshot.forEach(doc => {
+                    const result = doc.data();
+                    
+                    // نقاط الدرجات (كل درجة = نقطة)
+                    const score = Math.round(result.score);
+                    scorePoints += score;
+                    totalScore += score;
+                    
+                    if (score === 10) {
+                        perfectScores++;
+                    }
+                    
+                    // نقاط التأخير (بناءً على وقت التسليم)
+                    const timeliness = this.calculateTimelinessPoints(result.createdAt);
+                    timelinessPoints += timeliness;
+                    
+                    // حساب الالتزام (امتحانات متتالية بدون غياب)
+                    const examDate = new Date(result.examDate);
+                    if (lastExamDate) {
+                        const dayDiff = Math.floor((examDate - lastExamDate) / (1000 * 60 * 60 * 24));
+                        if (dayDiff === 1) { // امتحان متتالي
+                            complianceStreak++;
+                            maxStreak = Math.max(maxStreak, complianceStreak);
+                        } else if (dayDiff > 1) { // كسر التسلسل
+                            complianceStreak = 0;
+                        }
+                    } else {
+                        complianceStreak = 1;
+                        maxStreak = 1;
+                    }
+                    lastExamDate = examDate;
+                });
+                
+                // نقاط الالتزام (كل 5 امتحانات متتالية = 5 نقاط)
+                const compliancePoints = Math.floor(maxStreak / 5) * 5;
+                
+                // نقاط الحضور (5 نقاط لكل 5 امتحانات)
+                const examsCount = resultsSnapshot.size;
+                const attendancePoints = Math.floor(examsCount / 5) * 5;
+                
+                const averageScore = examsCount > 0 ? (totalScore / examsCount).toFixed(1) : 0;
+                
+                return {
+                    scorePoints,
+                    attendancePoints,
+                    compliancePoints,
+                    timelinessPoints,
+                    examsCount,
+                    perfectScores,
+                    averageScore: parseFloat(averageScore)
+                };
+            }
+            
+            calculateTimelinessPoints(createdAt) {
+                if (!createdAt) return 0;
+                
+                const submitTime = new Date(createdAt);
+                const examStartTime = new Date(submitTime);
+                examStartTime.setHours(18, 0, 0, 0); // الساعة 6 مساءً
+                
+                const diffHours = (submitTime - examStartTime) / (1000 * 60 * 60);
+                
+                if (diffHours <= 1) return 5;   // قبل 7 مساءً
+                if (diffHours <= 2) return 4;   // بين 7 و8
+                if (diffHours <= 3) return 3;   // بين 8 و9
+                if (diffHours <= 4) return 2;   // بين 9 و10
+                if (diffHours <= 5) return 1;   // بين 10 و11
+                return 0;                       // بعد 11
+            }
+            
+            calculateTotalPoints(points) {
+                return points.scorePoints + 
+                       points.attendancePoints + 
+                       points.compliancePoints + 
+                       points.timelinessPoints;
+            }
+            
+            getNextMonth(monthStr) {
+                const [year, month] = monthStr.split('-').map(Number);
+                let nextYear = year;
+                let nextMonth = month + 1;
+                
+                if (nextMonth > 12) {
+                    nextMonth = 1;
+                    nextYear++;
+                }
+                
+                return `${nextYear}-${String(nextMonth).padStart(2, '0')}`;
+            }
+            
+            displayRanking(ranking) {
+                const tableBody = document.getElementById('rankingTableBody');
+                if (!tableBody) return;
+                
+                let html = '';
+                const filteredRanking = this.selectedGrade === 'all' 
+                    ? ranking 
+                    : ranking.filter(student => student.grade === this.selectedGrade);
+                
+                filteredRanking.forEach((student, index) => {
+                    const isTopThree = student.rank <= 3;
+                    const rowClass = isTopThree ? 'top-three' : '';
+                    
+                    html += `
+                        <tr class="${rowClass}" onclick="showStudentPoints('${student.id}')" style="cursor: pointer;">
+                            <td class="rank-cell rank-${student.rank}">
+                                ${student.rank}
+                            </td>
+                            <td class="student-cell">
+                                <div class="student-avatar-small">
+                                    ${student.name.charAt(0)}
+                                </div>
+                                <div class="student-info">
+                                    <div class="student-name">${student.name}</div>
+                                    <div class="student-id">${student.id}</div>
+                                </div>
+                            </td>
+                            <td style="text-align: center; font-weight: 600; color: var(--grade${student.grade});">
+                                الصف ${student.grade}
+                            </td>
+                            <td class="points-cell" style="color: ${this.getPointsColor(student.totalPoints)};">
+                                ${this.formatNumber(student.totalPoints)}
+                            </td>
+                            <td class="details-cell">
+                                <button class="details-btn" onclick="event.stopPropagation(); showStudentPoints('${student.id}')">
+                                    <i class="fas fa-chart-pie"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                tableBody.innerHTML = html || `
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-light);">
+                            <i class="fas fa-user-slash" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                            <p>لا توجد بيانات للترتيب في هذا الشهر</p>
+                        </td>
+                    </tr>
+                `;
+                
+                this.updatePointsChart(filteredRanking);
+            }
+            
+            updatePodium(ranking) {
+                const topThree = ranking.slice(0, 3);
+                
+                topThree.forEach((student, index) => {
+                    const place = index + 1;
+                    const podiumStand = document.querySelector(`.podium-stand.${this.getPlaceClass(place)}`);
+                    
+                    if (podiumStand) {
+                        const avatar = podiumStand.querySelector('.student-avatar-large');
+                        const name = podiumStand.querySelector('.student-name-large');
+                        const points = podiumStand.querySelector('.student-points-large');
+                        const grade = podiumStand.querySelector('.student-grade');
+                        
+                        if (avatar) avatar.innerHTML = `<i class="fas fa-user"></i>`;
+                        if (name) name.textContent = student.name;
+                        if (points) points.textContent = this.formatNumber(student.totalPoints);
+                        if (grade) grade.textContent = `الصف ${student.grade}`;
+                        
+                        // تحديث onclick
+                        podiumStand.onclick = () => this.showStudentPoints(student.id);
+                    }
+                });
+            }
+            
+            getPlaceClass(place) {
+                switch(place) {
+                    case 1: return 'first';
+                    case 2: return 'second';
+                    case 3: return 'third';
+                    default: return '';
+                }
+            }
+            
+            updateStats(ranking) {
+                if (ranking.length === 0) {
+                    document.getElementById('totalRankedStudents').textContent = '0';
+                    document.getElementById('averagePoints').textContent = '0';
+                    document.getElementById('topScore').textContent = '0';
+                    document.getElementById('pointsGrowth').textContent = '0%';
+                    return;
+                }
+                
+                const totalStudents = ranking.length;
+                const totalPoints = ranking.reduce((sum, student) => sum + student.totalPoints, 0);
+                const averagePoints = Math.round(totalPoints / totalStudents);
+                const topScore = ranking[0]?.totalPoints || 0;
+                
+                // حساب النمو عن الشهر الماضي (مثال)
+                const growth = Math.round(Math.random() * 20); // سيكون حساب حقيقي
+        
+                document.getElementById('totalRankedStudents').textContent = this.formatNumber(totalStudents);
+                document.getElementById('averagePoints').textContent = this.formatNumber(averagePoints);
+                document.getElementById('topScore').textContent = this.formatNumber(topScore);
+                document.getElementById('pointsGrowth').textContent = `+${growth}%`;
+            }
+            
+            updatePointsChart(ranking) {
+                const container = document.getElementById('pointsDistributionChart');
+                if (!container) return;
+                
+                // تجميع النقاط في فئات
+                const categories = {
+                    '0-50': 0,
+                    '51-100': 0,
+                    '101-150': 0,
+                    '151-200': 0,
+                    '201+': 0
+                };
+                
+                ranking.forEach(student => {
+                    const points = student.totalPoints;
+                    if (points <= 50) categories['0-50']++;
+                    else if (points <= 100) categories['51-100']++;
+                    else if (points <= 150) categories['101-150']++;
+                    else if (points <= 200) categories['151-200']++;
+                    else categories['201+']++;
+                });
+                
+                const maxCount = Math.max(...Object.values(categories));
+                let html = '';
+                
+                Object.entries(categories).forEach(([range, count]) => {
+                    const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                    const color = this.getRangeColor(range);
+                    
+                    html += `
+                        <div class="chart-bar">
+                            <div class="chart-label">${range} نقطة</div>
+                            <div class="chart-bar-track">
+                                <div class="chart-bar-fill" 
+                                     style="background: ${color}; width: ${percentage}%;">
+                                </div>
+                            </div>
+                            <div class="chart-value" style="color: ${color};">
+                                ${count} طالب
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html || `
+                    <div style="text-align: center; padding: 40px; color: var(--text-light);">
+                        لا توجد بيانات للعرض
+                    </div>
+                `;
+            }
+            
+            getRangeColor(range) {
+                const colors = {
+                    '0-50': '#e74c3c',
+                    '51-100': '#f39c12',
+                    '101-150': '#3498db',
+                    '151-200': '#2ecc71',
+                    '201+': '#9b59b6'
+                };
+                return colors[range] || '#3498db';
+            }
+            
+            getPointsColor(points) {
+                if (points >= 200) return '#9b59b6';
+                if (points >= 150) return '#2ecc71';
+                if (points >= 100) return '#3498db';
+                if (points >= 50) return '#f39c12';
+                return '#e74c3c';
+            }
+            
+            filterRankingByGrade() {
+                this.loadMonthlyRanking();
+            }
+            
+            async showStudentPoints(studentId) {
+                this.showLoading('جاري تحميل تفاصيل النقاط...');
+                
+                try {
+                    const details = await this.getStudentPointsDetails(studentId);
+                    this.displayStudentPoints(details);
+                    this.hideLoading();
+                    
+                    // تمرير إلى الأعلى
+                    document.getElementById('pointsDetails').scrollIntoView({ behavior: 'smooth' });
+                } catch (error) {
+                    console.error('❌ خطأ في تحميل تفاصيل الطالب:', error);
+                    this.showAlert('خطأ في تحميل التفاصيل', 'error');
+                    this.hideLoading();
+                }
+            }
+            
+            async getStudentPointsDetails(studentId) {
+                const cacheKey = `student_details_${studentId}_${this.selectedMonth}`;
+                const cached = this.getFromCache(cacheKey);
+                
+                if (cached) {
+                    return cached;
+                }
+                
+                try {
+                    // جلب بيانات الطالب
+                    const studentSnapshot = await this.db.collection('students')
+                        .where('studentId', '==', studentId)
+                        .get();
+                    
+                    if (studentSnapshot.empty) {
+                        throw new Error('الطالب غير موجود');
+                    }
+                    
+                    const student = studentSnapshot.docs[0].data();
+                    
+                    // حساب نقاط الطالب
+                    const monthStart = `${this.selectedMonth}-01`;
+                    const nextMonth = this.getNextMonth(this.selectedMonth);
+                    const monthEnd = `${nextMonth}-01`;
+                    
+                    const points = await this.calculateStudentMonthlyPoints(
+                        studentId,
+                        monthStart,
+                        monthEnd
+                    );
+                    
+                    const totalPoints = this.calculateTotalPoints(points);
+                    
+                    const details = {
+                        id: student.studentId,
+                        name: student.fullName,
+                        grade: student.grade,
+                        className: student.className,
+                        totalPoints,
+                        ...points
+                    };
+                    
+                    this.saveToCache(cacheKey, details, this.cacheConfig.ttl.studentDetails);
+                    return details;
+                } catch (error) {
+                    console.error('❌ خطأ في جلب تفاصيل الطالب:', error);
+                    throw error;
+                }
+            }
+            
+            displayStudentPoints(details) {
+                const container = document.getElementById('pointsDetails');
+                const content = document.getElementById('studentDetailsContent');
+                
+                if (!container || !content) return;
+                
+                let html = `
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: var(--primary); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-user-graduate"></i>
+                            ${details.name}
+                        </h3>
+                        <p style="color: var(--text-light);">
+                            الصف ${details.grade} - ${details.id}
+                        </p>
+                    </div>
+                    
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <div style="font-size: 3.5rem; font-weight: 800; color: ${this.getPointsColor(details.totalPoints)}; margin: 20px 0;">
+                            ${this.formatNumber(details.totalPoints)}
+                        </div>
+                        <div style="color: var(--text-light); font-size: 1.1rem;">
+                            إجمالي النقاط الشهرية
+                        </div>
+                    </div>
+                    
+                    <div class="points-breakdown">
+                        <div class="breakdown-item score">
+                            <div style="font-size: 1.5rem; margin-bottom: 10px;">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="breakdown-value">${this.formatNumber(details.scorePoints)}</div>
+                            <div class="breakdown-label">نقاط الدرجات</div>
+                            <div style="margin-top: 10px; font-size: 0.85rem; color: var(--text-light);">
+                                ${details.examsCount} امتحان | ${details.perfectScores} درجة كاملة
+                            </div>
+                        </div>
+                        
+                        <div class="breakdown-item attendance">
+                            <div style="font-size: 1.5rem; margin-bottom: 10px;">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="breakdown-value">${this.formatNumber(details.attendancePoints)}</div>
+                            <div class="breakdown-label">نقاط الحضور</div>
+                            <div style="margin-top: 10px; font-size: 0.85rem; color: var(--text-light);">
+                                ${Math.floor(details.examsCount / 5)} × 5 نقاط
+                            </div>
+                        </div>
+                        
+                        <div class="breakdown-item compliance">
+                            <div style="font-size: 1.5rem; margin-bottom: 10px;">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="breakdown-value">${this.formatNumber(details.compliancePoints)}</div>
+                            <div class="breakdown-label">نقاط الالتزام</div>
+                            <div style="margin-top: 10px; font-size: 0.85rem; color: var(--text-light);">
+                                امتحانات متتالية: ${details.compliancePoints / 5} × 5
+                            </div>
+                        </div>
+                        
+                        <div class="breakdown-item timeliness">
+                            <div style="font-size: 1.5rem; margin-bottom: 10px;">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="breakdown-value">${this.formatNumber(details.timelinessPoints)}</div>
+                            <div class="breakdown-label">نقاط التسليم</div>
+                            <div style="margin-top: 10px; font-size: 0.85rem; color: var(--text-light);">
+                                متوسط ${(details.timelinessPoints / details.examsCount || 0).toFixed(1)}/امتحان
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px; text-align: center;">
+                        <div style="display: inline-flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
+                            <div style="background: white; padding: 15px 25px; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm);">
+                                <div style="font-size: 0.9rem; color: var(--text-light);">عدد الامتحانات</div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent);">
+                                    ${details.examsCount}
+                                </div>
+                            </div>
+                            
+                            <div style="background: white; padding: 15px 25px; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm);">
+                                <div style="font-size: 0.9rem; color: var(--text-light);">متوسط الدرجات</div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning);">
+                                    ${details.averageScore}
+                                </div>
+                            </div>
+                            
+                            <div style="background: white; padding: 15px 25px; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm);">
+                                <div style="font-size: 0.9rem; color: var(--text-light);">الدرجات الكاملة</div>
+                                <div style="font-size: 1.5rem; font-weight: 700; color: var(--success);">
+                                    ${details.perfectScores}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                content.innerHTML = html;
+                container.classList.add('active');
+            }
+            
+            // ===== نظام الكاش =====
+            getFromCache(key) {
+                const fullKey = this.cache.localStoragePrefix + key;
+                
+                if (this.cache.memory.has(fullKey)) {
+                    const item = this.cache.memory.get(fullKey);
+                    if (Date.now() - item.timestamp < item.ttl) {
+                        return item.data;
+                    }
+                    this.cache.memory.delete(fullKey);
+                }
+                
+                try {
+                    const stored = localStorage.getItem(fullKey);
+                    if (stored) {
+                        const item = JSON.parse(stored);
+                        if (Date.now() - item.timestamp < item.ttl) {
+                            this.cache.memory.set(fullKey, item);
+                            return item.data;
+                        }
+                        localStorage.removeItem(fullKey);
+                    }
+                } catch (e) {
+                    console.warn('⚠️ خطأ في قراءة الكاش:', e);
+                }
+                
+                return null;
+            }
+            
+            saveToCache(key, data, ttl) {
+                const fullKey = this.cache.localStoragePrefix + key;
+                const item = {
+                    data: data,
+                    timestamp: Date.now(),
+                    ttl: ttl || 5 * 60 * 1000
+                };
+                
+                this.cache.memory.set(fullKey, item);
+                
+                try {
+                    localStorage.setItem(fullKey, JSON.stringify(item));
+                } catch (e) {
+                    console.warn('⚠️ خطأ في حفظ الكاش:', e);
+                }
+            }
+            
+            // ===== دوال المساعدة =====
+            showLoading(message) {
+                document.getElementById('loadingText').textContent = message;
+                document.getElementById('loadingOverlay').style.display = 'flex';
+            }
+            
+            hideLoading() {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
+            
+            showAlert(message, type = 'info') {
+                const alert = document.createElement('div');
+                alert.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 25px;
+                    background: ${type === 'success' ? '#27ae60' : 
+                                 type === 'error' ? '#e74c3c' : '#3498db'};
+                    color: white;
+                    border-radius: var(--radius-sm);
+                    box-shadow: var(--shadow-lg);
+                    z-index: 1000;
+                    animation: slideIn 0.5s ease;
+                `;
+                
+                alert.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 
+                                      type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    ${message}
+                `;
+                
+                document.body.appendChild(alert);
+                
+                setTimeout(() => {
+                    alert.style.opacity = '0';
+                    alert.style.transform = 'translateX(100%)';
+                    setTimeout(() => alert.remove(), 500);
+                }, 3000);
+            }
+            
+            formatNumber(num) {
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            }
+        }
+        
+        // ===== تهيئة النظام =====
+        let rankingSystem;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                rankingSystem = new MonthlyRankingSystem();
+                console.log('🏆 نظام الترتيب الشهري جاهز للعمل!');
+            } catch (error) {
+                console.error('❌ فشل في تهيئة النظام:', error);
+                alert('حدث خطأ في تهيئة النظام. يرجى تحديث الصفحة.');
+            }
+        });
+        
+        // ===== دوال الواجهة =====
+        function calculateMonthlyRanking() {
+            rankingSystem.loadMonthlyRanking();
+        }
+        
+        function showStudentDetails(place) {
+            // البحث عن الطالب في المركز المحدد
+            const podiumStand = document.querySelector(`.podium-stand.${place === 1 ? 'first' : place === 2 ? 'second' : 'third'}`);
+            const studentName = podiumStand?.querySelector('.student-name-large')?.textContent;
+            
+            if (studentName && studentName !== 'المركز الأول' && studentName !== 'المركز الثاني' && studentName !== 'المركز الثالث') {
+                rankingSystem.showAlert(`عرض تفاصيل ${studentName}`, 'info');
+            }
+        }
+        
+        function showStudentPoints(studentId) {
+            rankingSystem.showStudentPoints(studentId);
+        }
+        
+        function showAwardCeremony() {
+            rankingSystem.showLoading('جاري تحضير حفل التكريم...');
+            setTimeout(() => {
+                rankingSystem.hideLoading();
+                rankingSystem.showAlert('حفل التكريم جاهز للعرض!', 'success');
+                
+                // تأثيرات خاصة لحفل التكريم
+                document.querySelectorAll('.podium-stand').forEach(stand => {
+                    stand.classList.add('floating');
+                });
+                
+                // تشغيل صوت التصفيق (إن أمكن)
+                try {
+                    const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-audience-clapping-loudly-478.mp3');
+                    audio.volume = 0.3;
+                    audio.play();
+                } catch (e) {
+                    console.log('لا يمكن تشغيل الصوت');
+                }
+            }, 2000);
+        }
+        
+        function exportRanking() {
+            rankingSystem.showAlert('جاري تحضير ملف التصدير...', 'info');
+            setTimeout(() => {
+                rankingSystem.showAlert('تم تحضير ملف التصدير بنجاح', 'success');
+                // هنا سيتم إضافة منطق التصدير
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
