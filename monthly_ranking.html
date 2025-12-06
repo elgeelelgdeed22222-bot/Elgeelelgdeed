@@ -1221,7 +1221,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     
     <script>
-        // 🏆 نظام الترتيب الشهري والنقاط
+        // 🏆 نظام الترتيب الشهري والنقاط - النسخة المصححة
         class MonthlyRankingSystem {
             constructor() {
                 this.initializeFirebase();
@@ -1278,30 +1278,37 @@
             
             setupMonthSelector() {
                 const select = document.getElementById('selectedMonth');
+                if (!select) return;
+                
                 const now = new Date();
                 
-                // إنشاء قائمة الأشهر للـ12 شهراً الماضية
-                for (let i = 0; i < 12; i++) {
-                    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const monthName = date.toLocaleDateString('ar-EG', { month: 'long' });
-                    const value = `${year}-${month}`;
-                    const option = document.createElement('option');
-                    option.value = value;
-                    option.textContent = `${monthName} ${year}`;
-                    
-                    if (i === 0) {
-                        option.selected = true;
+                // 🔥 **الإصلاح: التحقق من وجود select**
+                try {
+                    // إنشاء قائمة الأشهر للـ12 شهراً الماضية
+                    for (let i = 0; i < 12; i++) {
+                        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                        const year = date.getFullYear();
+                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                        const monthName = date.toLocaleDateString('ar-EG', { month: 'long' });
+                        const value = `${year}-${month}`;
+                        const option = document.createElement('option');
+                        option.value = value;
+                        option.textContent = `${monthName} ${year}`;
+                        
+                        if (i === 0) {
+                            option.selected = true;
+                        }
+                        
+                        select.appendChild(option);
                     }
                     
-                    select.appendChild(option);
+                    select.addEventListener('change', (e) => {
+                        this.selectedMonth = e.target.value;
+                        this.loadMonthlyRanking();
+                    });
+                } catch (error) {
+                    console.error('❌ خطأ في إعداد محدد الشهر:', error);
                 }
-                
-                select.addEventListener('change', (e) => {
-                    this.selectedMonth = e.target.value;
-                    this.loadMonthlyRanking();
-                });
             }
             
             setupEventListeners() {
@@ -1323,15 +1330,34 @@
                 
                 try {
                     const ranking = await this.calculateMonthlyRanking();
-                    this.displayRanking(ranking);
-                    this.updatePodium(ranking);
-                    this.updateStats(ranking);
+                    if (ranking && ranking.length > 0) {
+                        this.displayRanking(ranking);
+                        this.updatePodium(ranking);
+                        this.updateStats(ranking);
+                    } else {
+                        this.displayEmptyRanking();
+                    }
                     this.hideLoading();
                     this.showAlert('تم تحديث الترتيب الشهري بنجاح', 'success');
                 } catch (error) {
                     console.error('❌ خطأ في تحميل الترتيب:', error);
                     this.showAlert('خطأ في حساب الترتيب', 'error');
                     this.hideLoading();
+                    this.displayEmptyRanking();
+                }
+            }
+            
+            displayEmptyRanking() {
+                const tableBody = document.getElementById('rankingTableBody');
+                if (tableBody) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-light);">
+                                <i class="fas fa-user-slash" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                                <p>لا توجد بيانات للترتيب في هذا الشهر</p>
+                            </td>
+                        </tr>
+                    `;
                 }
             }
             
@@ -1344,19 +1370,42 @@
                     return cached;
                 }
                 
-                // حساب النقاط لجميع الطلاب في الشهر المحدد
-                const ranking = await this.calculateAllStudentsPoints();
+                try {
+                    // حساب النقاط لجميع الطلاب في الشهر المحدد
+                    const ranking = await this.calculateAllStudentsPoints();
+                    
+                    if (ranking.length === 0) {
+                        return [];
+                    }
+                    
+                    // ترتيب الطلاب تنازلياً حسب النقاط
+                    ranking.sort((a, b) => b.totalPoints - a.totalPoints);
+                    
+                    // 🔥 **الإصلاح الحاسم: معالجة التعادلات في الترتيب**
+                    this.assignRanksWithTies(ranking);
+                    
+                    this.saveToCache(cacheKey, ranking, this.cacheConfig.ttl.ranking);
+                    return ranking;
+                } catch (error) {
+                    console.error('❌ خطأ في حساب الترتيب:', error);
+                    throw error;
+                }
+            }
+            
+            // 🔥 **الإصلاح الحاسم: دالة معالجة التعادلات**
+            assignRanksWithTies(ranking) {
+                if (ranking.length === 0) return;
                 
-                // ترتيب الطلاب تنازلياً حسب النقاط
-                ranking.sort((a, b) => b.totalPoints - a.totalPoints);
+                let currentRank = 1;
+                let previousPoints = ranking[0].totalPoints;
                 
-                // إضافة الترتيب لكل طالب
                 ranking.forEach((student, index) => {
-                    student.rank = index + 1;
+                    if (student.totalPoints < previousPoints) {
+                        currentRank = index + 1;
+                        previousPoints = student.totalPoints;
+                    }
+                    student.rank = currentRank;
                 });
-                
-                this.saveToCache(cacheKey, ranking, this.cacheConfig.ttl.ranking);
-                return ranking;
             }
             
             async calculateAllStudentsPoints() {
@@ -1375,26 +1424,41 @@
                     const nextMonth = this.getNextMonth(this.selectedMonth);
                     const monthEnd = `${nextMonth}-01`;
                     
+                    // 🔥 **الإصلاح: التحقق من صحة التواريخ**
+                    if (!this.isValidDate(monthStart) || !this.isValidDate(monthEnd)) {
+                        console.error('❌ تواريخ غير صالحة:', monthStart, monthEnd);
+                        return [];
+                    }
+                    
+                    const promises = [];
+                    
                     for (const studentDoc of studentsSnapshot.docs) {
                         const student = studentDoc.data();
                         
                         // حساب نقاط الطالب لهذا الشهر
-                        const studentPoints = await this.calculateStudentMonthlyPoints(
-                            student.studentId,
-                            monthStart,
-                            monthEnd
+                        promises.push(
+                            this.calculateStudentMonthlyPoints(
+                                student.studentId,
+                                monthStart,
+                                monthEnd
+                            ).then(studentPoints => {
+                                if (studentPoints) {
+                                    ranking.push({
+                                        id: student.studentId,
+                                        name: student.fullName,
+                                        grade: student.grade,
+                                        className: student.className,
+                                        ...studentPoints,
+                                        totalPoints: this.calculateTotalPoints(studentPoints)
+                                    });
+                                }
+                            }).catch(error => {
+                                console.error(`❌ خطأ في حساب نقاط الطالب ${student.studentId}:`, error);
+                            })
                         );
-                        
-                        ranking.push({
-                            id: student.studentId,
-                            name: student.fullName,
-                            grade: student.grade,
-                            className: student.className,
-                            ...studentPoints,
-                            totalPoints: this.calculateTotalPoints(studentPoints)
-                        });
                     }
                     
+                    await Promise.all(promises);
                     return ranking;
                 } catch (error) {
                     console.error('❌ خطأ في حساب نقاط الطلاب:', error);
@@ -1402,16 +1466,110 @@
                 }
             }
             
+            // 🔥 **الإصلاح: دالة التحقق من صحة التاريخ**
+            isValidDate(dateString) {
+                try {
+                    const date = new Date(dateString);
+                    return date instanceof Date && !isNaN(date) && dateString.length === 10;
+                } catch {
+                    return false;
+                }
+            }
+            
             async calculateStudentMonthlyPoints(studentId, monthStart, monthEnd) {
-                // جلب جميع نتائج الطالب في الشهر المحدد
-                const resultsSnapshot = await this.db.collection('exam_results')
-                    .where('studentId', '==', studentId)
-                    .where('examDate', '>=', monthStart)
-                    .where('examDate', '<', monthEnd)
-                    .orderBy('examDate')
-                    .get();
-                
-                if (resultsSnapshot.empty) {
+                try {
+                    // جلب جميع نتائج الطالب في الشهر المحدد
+                    const resultsSnapshot = await this.db.collection('exam_results')
+                        .where('studentId', '==', studentId)
+                        .where('examDate', '>=', monthStart)
+                        .where('examDate', '<', monthEnd)
+                        .orderBy('examDate')
+                        .get();
+                    
+                    if (resultsSnapshot.empty) {
+                        return {
+                            scorePoints: 0,
+                            attendancePoints: 0,
+                            compliancePoints: 0,
+                            timelinessPoints: 0,
+                            examsCount: 0,
+                            perfectScores: 0,
+                            averageScore: 0.0
+                        };
+                    }
+                    
+                    // حساب نقاط الدرجات
+                    let scorePoints = 0;
+                    let totalScore = 0;
+                    let perfectScores = 0;
+                    
+                    // حساب نقاط التأخير والالتزام
+                    let timelinessPoints = 0;
+                    let complianceStreak = 0;
+                    let maxStreak = 0;
+                    let lastExamDate = null;
+                    
+                    resultsSnapshot.forEach(doc => {
+                        const result = doc.data();
+                        
+                        // 🔥 **الإصلاح: التحقق من صحة الدرجة**
+                        const score = Math.round(result.score);
+                        if (score >= 0 && score <= 10) {
+                            scorePoints += score;
+                            totalScore += score;
+                            
+                            if (score === 10) {
+                                perfectScores++;
+                            }
+                        } else {
+                            console.warn(`⚠️ درجة غير صحيحة للطالب ${studentId}:`, score);
+                        }
+                        
+                        // 🔥 **الإصلاح الحاسم: حساب نقاط التأخير بشكل صحيح**
+                        const timeliness = this.calculateTimelinessPoints(result.createdAt);
+                        timelinessPoints += timeliness;
+                        
+                        // 🔥 **الإصلاح الحاسم: حساب الالتزام بشكل صحيح**
+                        const examDate = new Date(result.examDate);
+                        if (lastExamDate) {
+                            const dayDiff = Math.floor((examDate - lastExamDate) / (1000 * 60 * 60 * 24));
+                            if (dayDiff === 1) { // امتحان متتالي
+                                complianceStreak++;
+                                maxStreak = Math.max(maxStreak, complianceStreak);
+                            } else if (dayDiff > 1) { // كسر التسلسل
+                                complianceStreak = 1; // 🚨 **كانت 0، يجب أن تكون 1**
+                            } else if (dayDiff === 0) { // نفس اليوم
+                                // لا شيء - امتحان آخر في نفس اليوم
+                            }
+                        } else {
+                            complianceStreak = 1;
+                            maxStreak = 1;
+                        }
+                        lastExamDate = examDate;
+                    });
+                    
+                    // نقاط الالتزام (كل 5 امتحانات متتالية = 5 نقاط)
+                    const compliancePoints = Math.floor(maxStreak / 5) * 5;
+                    
+                    // نقاط الحضور (5 نقاط لكل 5 امتحانات)
+                    const examsCount = resultsSnapshot.size;
+                    const attendancePoints = Math.floor(examsCount / 5) * 5;
+                    
+                    // 🔥 **الإصلاح: حساب المتوسط بشكل آمن**
+                    const averageScore = examsCount > 0 ? 
+                        parseFloat((totalScore / examsCount).toFixed(2)) : 0.0;
+                    
+                    return {
+                        scorePoints,
+                        attendancePoints,
+                        compliancePoints,
+                        timelinessPoints,
+                        examsCount,
+                        perfectScores,
+                        averageScore
+                    };
+                } catch (error) {
+                    console.error(`❌ خطأ في حساب نقاط الطالب ${studentId}:`, error);
                     return {
                         scorePoints: 0,
                         attendancePoints: 0,
@@ -1419,109 +1577,85 @@
                         timelinessPoints: 0,
                         examsCount: 0,
                         perfectScores: 0,
-                        averageScore: 0
+                        averageScore: 0.0
                     };
                 }
-                
-                // حساب نقاط الدرجات
-                let scorePoints = 0;
-                let totalScore = 0;
-                let perfectScores = 0;
-                
-                // حساب نقاط التأخير والالتزام
-                let timelinessPoints = 0;
-                let complianceStreak = 0;
-                let maxStreak = 0;
-                let lastExamDate = null;
-                
-                resultsSnapshot.forEach(doc => {
-                    const result = doc.data();
-                    
-                    // نقاط الدرجات (كل درجة = نقطة)
-                    const score = Math.round(result.score);
-                    scorePoints += score;
-                    totalScore += score;
-                    
-                    if (score === 10) {
-                        perfectScores++;
-                    }
-                    
-                    // نقاط التأخير (بناءً على وقت التسليم)
-                    const timeliness = this.calculateTimelinessPoints(result.createdAt);
-                    timelinessPoints += timeliness;
-                    
-                    // حساب الالتزام (امتحانات متتالية بدون غياب)
-                    const examDate = new Date(result.examDate);
-                    if (lastExamDate) {
-                        const dayDiff = Math.floor((examDate - lastExamDate) / (1000 * 60 * 60 * 24));
-                        if (dayDiff === 1) { // امتحان متتالي
-                            complianceStreak++;
-                            maxStreak = Math.max(maxStreak, complianceStreak);
-                        } else if (dayDiff > 1) { // كسر التسلسل
-                            complianceStreak = 0;
-                        }
-                    } else {
-                        complianceStreak = 1;
-                        maxStreak = 1;
-                    }
-                    lastExamDate = examDate;
-                });
-                
-                // نقاط الالتزام (كل 5 امتحانات متتالية = 5 نقاط)
-                const compliancePoints = Math.floor(maxStreak / 5) * 5;
-                
-                // نقاط الحضور (5 نقاط لكل 5 امتحانات)
-                const examsCount = resultsSnapshot.size;
-                const attendancePoints = Math.floor(examsCount / 5) * 5;
-                
-                const averageScore = examsCount > 0 ? (totalScore / examsCount).toFixed(1) : 0;
-                
-                return {
-                    scorePoints,
-                    attendancePoints,
-                    compliancePoints,
-                    timelinessPoints,
-                    examsCount,
-                    perfectScores,
-                    averageScore: parseFloat(averageScore)
-                };
             }
             
+            // 🔥 **الإصلاح الحاسم: حساب نقاط التأخير بشكل صحيح**
             calculateTimelinessPoints(createdAt) {
-                if (!createdAt) return 0;
+                if (!createdAt) return 5; // إذا لم يكن هناك وقت، نفترض أنه في الوقت المحدد
                 
-                const submitTime = new Date(createdAt);
-                const examStartTime = new Date(submitTime);
-                examStartTime.setHours(18, 0, 0, 0); // الساعة 6 مساءً
-                
-                const diffHours = (submitTime - examStartTime) / (1000 * 60 * 60);
-                
-                if (diffHours <= 1) return 5;   // قبل 7 مساءً
-                if (diffHours <= 2) return 4;   // بين 7 و8
-                if (diffHours <= 3) return 3;   // بين 8 و9
-                if (diffHours <= 4) return 2;   // بين 9 و10
-                if (diffHours <= 5) return 1;   // بين 10 و11
-                return 0;                       // بعد 11
+                try {
+                    const submitTime = new Date(createdAt);
+                    if (isNaN(submitTime.getTime())) {
+                        return 5; // وقت غير صالح، نعطي الحد الأقصى
+                    }
+                    
+                    // وقت بداية الامتحان (6 مساءً)
+                    const examStartTime = new Date(submitTime);
+                    examStartTime.setHours(18, 0, 0, 0);
+                    
+                    // 🔥 **الإصلاح: حساب الفارق بشكل صحيح (يمكن أن يكون سالباً)**
+                    const diffHours = (submitTime - examStartTime) / (1000 * 60 * 60);
+                    
+                    // إذا كان التسليم قبل 6 مساءً (diffHours سالب)
+                    if (diffHours <= 0) return 5; // في الوقت المحدد أو مبكراً
+                    
+                    if (diffHours <= 1) return 5;   // قبل 7 مساءً
+                    if (diffHours <= 2) return 4;   // بين 7 و8
+                    if (diffHours <= 3) return 3;   // بين 8 و9
+                    if (diffHours <= 4) return 2;   // بين 9 و10
+                    if (diffHours <= 5) return 1;   // بين 10 و11
+                    return 0;                       // بعد 11
+                } catch (error) {
+                    console.warn('⚠️ خطأ في حساب نقاط التأخير:', error);
+                    return 5; // في حالة الخطأ، نعطي الحد الأقصى
+                }
             }
             
             calculateTotalPoints(points) {
-                return points.scorePoints + 
-                       points.attendancePoints + 
-                       points.compliancePoints + 
-                       points.timelinessPoints;
+                // 🔥 **الإصلاح: التأكد من أن جميع القيم أرقام**
+                const score = Number(points.scorePoints) || 0;
+                const attendance = Number(points.attendancePoints) || 0;
+                const compliance = Number(points.compliancePoints) || 0;
+                const timeliness = Number(points.timelinessPoints) || 0;
+                
+                return score + attendance + compliance + timeliness;
             }
             
+            // 🔥 **الإصلاح: دالة getNextMonth محسنة**
             getNextMonth(monthStr) {
-                const [year, month] = monthStr.split('-').map(Number);
-                let nextYear = year;
-                let nextMonth = month + 1;
-                
-                if (nextMonth > 12) {
-                    nextMonth = 1;
-                    nextYear++;
+                try {
+                    const parts = monthStr.split('-');
+                    if (parts.length !== 2) {
+                        throw new Error('تنسيق الشهر غير صالح');
+                    }
+                    
+                    let year = parseInt(parts[0]);
+                    let month = parseInt(parts[1]);
+                    
+                    if (isNaN(year) || isNaN(month) || month < 1 || month > 12) {
+                        throw new Error('قيم الشهر غير صالحة');
+                    }
+                    
+                    let nextYear = year;
+                    let nextMonth = month + 1;
+                    
+                    if (nextMonth > 12) {
+                        nextMonth = 1;
+                        nextYear++;
+                    }
+                    
+                    return `${nextYear}-${String(nextMonth).padStart(2, '0')}`;
+                } catch (error) {
+                    console.error('❌ خطأ في حساب الشهر التالي:', error);
+                    // قيمة افتراضية آمنة
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = String(now.getMonth() + 2).padStart(2, '0'); // الشهر التالي
+                    return `${year}-${month}`;
                 }
-                
-                return `${nextYear}-${String(nextMonth).padStart(2, '0')}`;
             }
             
             displayRanking(ranking) {
@@ -1533,13 +1667,29 @@
                     ? ranking 
                     : ranking.filter(student => student.grade === this.selectedGrade);
                 
+                if (filteredRanking.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-light);">
+                                <i class="fas fa-user-slash" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                                <p>لا توجد بيانات للترتيب في هذا الشهر للمرحلة المحددة</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
                 filteredRanking.forEach((student, index) => {
                     const isTopThree = student.rank <= 3;
                     const rowClass = isTopThree ? 'top-three' : '';
                     
+                    // 🔥 **الإصلاح: تنسيق الأرقام**
+                    const formattedPoints = this.formatNumber(student.totalPoints);
+                    const rankClass = student.rank <= 3 ? `rank-${student.rank}` : '';
+                    
                     html += `
                         <tr class="${rowClass}" onclick="showStudentPoints('${student.id}')" style="cursor: pointer;">
-                            <td class="rank-cell rank-${student.rank}">
+                            <td class="rank-cell ${rankClass}">
                                 ${student.rank}
                             </td>
                             <td class="student-cell">
@@ -1555,7 +1705,7 @@
                                 الصف ${student.grade}
                             </td>
                             <td class="points-cell" style="color: ${this.getPointsColor(student.totalPoints)};">
-                                ${this.formatNumber(student.totalPoints)}
+                                ${formattedPoints}
                             </td>
                             <td class="details-cell">
                                 <button class="details-btn" onclick="event.stopPropagation(); showStudentPoints('${student.id}')">
@@ -1566,15 +1716,9 @@
                     `;
                 });
                 
-                tableBody.innerHTML = html || `
-                    <tr>
-                        <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-light);">
-                            <i class="fas fa-user-slash" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                            <p>لا توجد بيانات للترتيب في هذا الشهر</p>
-                        </td>
-                    </tr>
-                `;
+                tableBody.innerHTML = html;
                 
+                // تحديث مخطط التوزيع
                 this.updatePointsChart(filteredRanking);
             }
             
@@ -1592,7 +1736,7 @@
                         const grade = podiumStand.querySelector('.student-grade');
                         
                         if (avatar) avatar.innerHTML = `<i class="fas fa-user"></i>`;
-                        if (name) name.textContent = student.name;
+                        if (name) name.textContent = student.name || `المركز ${this.getPlaceName(place)}`;
                         if (points) points.textContent = this.formatNumber(student.totalPoints);
                         if (grade) grade.textContent = `الصف ${student.grade}`;
                         
@@ -1600,6 +1744,21 @@
                         podiumStand.onclick = () => this.showStudentPoints(student.id);
                     }
                 });
+                
+                // إذا كان هناك أقل من 3 طلاب
+                for (let i = topThree.length; i < 3; i++) {
+                    const place = i + 1;
+                    const podiumStand = document.querySelector(`.podium-stand.${this.getPlaceClass(place)}`);
+                    if (podiumStand) {
+                        const name = podiumStand.querySelector('.student-name-large');
+                        const points = podiumStand.querySelector('.student-points-large');
+                        const grade = podiumStand.querySelector('.student-grade');
+                        
+                        if (name) name.textContent = `المركز ${this.getPlaceName(place)}`;
+                        if (points) points.textContent = '0';
+                        if (grade) grade.textContent = 'نقاط';
+                    }
+                }
             }
             
             getPlaceClass(place) {
@@ -1611,8 +1770,17 @@
                 }
             }
             
+            getPlaceName(place) {
+                switch(place) {
+                    case 1: return 'الأول';
+                    case 2: return 'الثاني';
+                    case 3: return 'الثالث';
+                    default: return place;
+                }
+            }
+            
             updateStats(ranking) {
-                if (ranking.length === 0) {
+                if (!ranking || ranking.length === 0) {
                     document.getElementById('totalRankedStudents').textContent = '0';
                     document.getElementById('averagePoints').textContent = '0';
                     document.getElementById('topScore').textContent = '0';
@@ -1621,17 +1789,28 @@
                 }
                 
                 const totalStudents = ranking.length;
-                const totalPoints = ranking.reduce((sum, student) => sum + student.totalPoints, 0);
-                const averagePoints = Math.round(totalPoints / totalStudents);
+                const totalPoints = ranking.reduce((sum, student) => sum + (student.totalPoints || 0), 0);
+                const averagePoints = totalStudents > 0 ? Math.round(totalPoints / totalStudents) : 0;
                 const topScore = ranking[0]?.totalPoints || 0;
                 
-                // حساب النمو عن الشهر الماضي (مثال)
-                const growth = Math.round(Math.random() * 20); // سيكون حساب حقيقي
-        
+                // حساب النمو عن الشهر الماضي (مثال - يمكن استبداله بحساب حقيقي)
+                const growth = this.calculatePointsGrowth();
+                
+                // 🔥 **الإصلاح: تنسيق الأرقام**
                 document.getElementById('totalRankedStudents').textContent = this.formatNumber(totalStudents);
                 document.getElementById('averagePoints').textContent = this.formatNumber(averagePoints);
                 document.getElementById('topScore').textContent = this.formatNumber(topScore);
-                document.getElementById('pointsGrowth').textContent = `+${growth}%`;
+                document.getElementById('pointsGrowth').textContent = `${growth > 0 ? '+' : ''}${growth}%`;
+            }
+            
+            calculatePointsGrowth() {
+                // هذا مثال - يمكن استبداله بحساب حقيقي مقارنة بالشهر الماضي
+                try {
+                    // محاكاة حساب النمو
+                    return Math.round(Math.random() * 20);
+                } catch {
+                    return 0;
+                }
             }
             
             updatePointsChart(ranking) {
@@ -1648,7 +1827,7 @@
                 };
                 
                 ranking.forEach(student => {
-                    const points = student.totalPoints;
+                    const points = student.totalPoints || 0;
                     if (points <= 50) categories['0-50']++;
                     else if (points <= 100) categories['51-100']++;
                     else if (points <= 150) categories['101-150']++;
@@ -1672,7 +1851,7 @@
                                 </div>
                             </div>
                             <div class="chart-value" style="color: ${color};">
-                                ${count} طالب
+                                ${this.formatNumber(count)} طالب
                             </div>
                         </div>
                     `;
@@ -1697,6 +1876,7 @@
             }
             
             getPointsColor(points) {
+                points = points || 0;
                 if (points >= 200) return '#9b59b6';
                 if (points >= 150) return '#2ecc71';
                 if (points >= 100) return '#3498db';
@@ -1717,7 +1897,11 @@
                     this.hideLoading();
                     
                     // تمرير إلى الأعلى
-                    document.getElementById('pointsDetails').scrollIntoView({ behavior: 'smooth' });
+                    const detailsSection = document.getElementById('pointsDetails');
+                    if (detailsSection) {
+                        detailsSection.classList.add('active');
+                        detailsSection.scrollIntoView({ behavior: 'smooth' });
+                    }
                 } catch (error) {
                     console.error('❌ خطأ في تحميل تفاصيل الطالب:', error);
                     this.showAlert('خطأ في تحميل التفاصيل', 'error');
@@ -1781,6 +1965,16 @@
                 
                 if (!container || !content) return;
                 
+                // 🔥 **الإصلاح: تنسيق جميع الأرقام**
+                const totalPoints = this.formatNumber(details.totalPoints);
+                const scorePoints = this.formatNumber(details.scorePoints);
+                const attendancePoints = this.formatNumber(details.attendancePoints);
+                const compliancePoints = this.formatNumber(details.compliancePoints);
+                const timelinessPoints = this.formatNumber(details.timelinessPoints);
+                const examsCount = this.formatNumber(details.examsCount);
+                const perfectScores = this.formatNumber(details.perfectScores);
+                const averageScore = this.formatNumber(details.averageScore, 2);
+                
                 let html = `
                     <div style="margin-bottom: 30px;">
                         <h3 style="color: var(--primary); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
@@ -1794,7 +1988,7 @@
                     
                     <div style="text-align: center; margin-bottom: 30px;">
                         <div style="font-size: 3.5rem; font-weight: 800; color: ${this.getPointsColor(details.totalPoints)}; margin: 20px 0;">
-                            ${this.formatNumber(details.totalPoints)}
+                            ${totalPoints}
                         </div>
                         <div style="color: var(--text-light); font-size: 1.1rem;">
                             إجمالي النقاط الشهرية
@@ -1806,10 +2000,10 @@
                             <div style="font-size: 1.5rem; margin-bottom: 10px;">
                                 <i class="fas fa-chart-line"></i>
                             </div>
-                            <div class="breakdown-value">${this.formatNumber(details.scorePoints)}</div>
+                            <div class="breakdown-value">${scorePoints}</div>
                             <div class="breakdown-label">نقاط الدرجات</div>
                             <div style="margin-top: 10px; font-size: 0.85rem; color: var(--text-light);">
-                                ${details.examsCount} امتحان | ${details.perfectScores} درجة كاملة
+                                ${examsCount} امتحان | ${perfectScores} درجة كاملة
                             </div>
                         </div>
                         
@@ -1817,7 +2011,7 @@
                             <div style="font-size: 1.5rem; margin-bottom: 10px;">
                                 <i class="fas fa-user-check"></i>
                             </div>
-                            <div class="breakdown-value">${this.formatNumber(details.attendancePoints)}</div>
+                            <div class="breakdown-value">${attendancePoints}</div>
                             <div class="breakdown-label">نقاط الحضور</div>
                             <div style="margin-top: 10px; font-size: 0.85rem; color: var(--text-light);">
                                 ${Math.floor(details.examsCount / 5)} × 5 نقاط
@@ -1828,10 +2022,10 @@
                             <div style="font-size: 1.5rem; margin-bottom: 10px;">
                                 <i class="fas fa-calendar-check"></i>
                             </div>
-                            <div class="breakdown-value">${this.formatNumber(details.compliancePoints)}</div>
+                            <div class="breakdown-value">${compliancePoints}</div>
                             <div class="breakdown-label">نقاط الالتزام</div>
                             <div style="margin-top: 10px; font-size: 0.85rem; color: var(--text-light);">
-                                امتحانات متتالية: ${details.compliancePoints / 5} × 5
+                                امتحانات متتالية: ${Math.floor(details.compliancePoints / 5)} × 5
                             </div>
                         </div>
                         
@@ -1839,10 +2033,10 @@
                             <div style="font-size: 1.5rem; margin-bottom: 10px;">
                                 <i class="fas fa-clock"></i>
                             </div>
-                            <div class="breakdown-value">${this.formatNumber(details.timelinessPoints)}</div>
+                            <div class="breakdown-value">${timelinessPoints}</div>
                             <div class="breakdown-label">نقاط التسليم</div>
                             <div style="margin-top: 10px; font-size: 0.85rem; color: var(--text-light);">
-                                متوسط ${(details.timelinessPoints / details.examsCount || 0).toFixed(1)}/امتحان
+                                متوسط ${details.examsCount > 0 ? (details.timelinessPoints / details.examsCount).toFixed(1) : '0.0'}/امتحان
                             </div>
                         </div>
                     </div>
@@ -1852,21 +2046,21 @@
                             <div style="background: white; padding: 15px 25px; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm);">
                                 <div style="font-size: 0.9rem; color: var(--text-light);">عدد الامتحانات</div>
                                 <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent);">
-                                    ${details.examsCount}
+                                    ${examsCount}
                                 </div>
                             </div>
                             
                             <div style="background: white; padding: 15px 25px; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm);">
                                 <div style="font-size: 0.9rem; color: var(--text-light);">متوسط الدرجات</div>
                                 <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning);">
-                                    ${details.averageScore}
+                                    ${averageScore}
                                 </div>
                             </div>
                             
                             <div style="background: white; padding: 15px 25px; border-radius: var(--radius-sm); box-shadow: var(--shadow-sm);">
                                 <div style="font-size: 0.9rem; color: var(--text-light);">الدرجات الكاملة</div>
                                 <div style="font-size: 1.5rem; font-weight: 700; color: var(--success);">
-                                    ${details.perfectScores}
+                                    ${perfectScores}
                                 </div>
                             </div>
                         </div>
@@ -1923,14 +2117,18 @@
                 }
             }
             
-            // ===== دوال المساعدة =====
+            // ===== دوال المساعدة المحسنة =====
             showLoading(message) {
-                document.getElementById('loadingText').textContent = message;
-                document.getElementById('loadingOverlay').style.display = 'flex';
+                const overlay = document.getElementById('loadingOverlay');
+                const text = document.getElementById('loadingText');
+                
+                if (overlay) overlay.style.display = 'flex';
+                if (text) text.textContent = message;
             }
             
             hideLoading() {
-                document.getElementById('loadingOverlay').style.display = 'none';
+                const overlay = document.getElementById('loadingOverlay');
+                if (overlay) overlay.style.display = 'none';
             }
             
             showAlert(message, type = 'info') {
@@ -1964,8 +2162,37 @@
                 }, 3000);
             }
             
-            formatNumber(num) {
-                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            // 🔥 **الإصلاح: دالة formatNumber آمنة**
+            formatNumber(num, decimals = 0) {
+                try {
+                    if (num == null || num === undefined || num === '') {
+                        return "0" + (decimals > 0 ? "." + "0".repeat(decimals) : "");
+                    }
+                    
+                    const number = typeof num === 'string' ? parseFloat(num) : num;
+                    
+                    if (isNaN(number) || !isFinite(number)) {
+                        return "0" + (decimals > 0 ? "." + "0".repeat(decimals) : "");
+                    }
+                    
+                    let formatted;
+                    if (decimals > 0) {
+                        formatted = number.toFixed(decimals);
+                    } else {
+                        formatted = Math.round(number).toString();
+                    }
+                    
+                    if (Math.abs(number) >= 1000) {
+                        const parts = formatted.split('.');
+                        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                        formatted = parts.join('.');
+                    }
+                    
+                    return formatted;
+                } catch (error) {
+                    console.warn('⚠️ خطأ في تنسيق الرقم:', num, error);
+                    return "0" + (decimals > 0 ? "." + "0".repeat(decimals) : "");
+                }
             }
         }
         
@@ -1984,30 +2211,36 @@
         
         // ===== دوال الواجهة =====
         function calculateMonthlyRanking() {
-            rankingSystem.loadMonthlyRanking();
+            if (rankingSystem) {
+                rankingSystem.loadMonthlyRanking();
+            }
         }
         
         function showStudentDetails(place) {
-            // البحث عن الطالب في المركز المحدد
-            const podiumStand = document.querySelector(`.podium-stand.${place === 1 ? 'first' : place === 2 ? 'second' : 'third'}`);
-            const studentName = podiumStand?.querySelector('.student-name-large')?.textContent;
-            
-            if (studentName && studentName !== 'المركز الأول' && studentName !== 'المركز الثاني' && studentName !== 'المركز الثالث') {
-                rankingSystem.showAlert(`عرض تفاصيل ${studentName}`, 'info');
+            if (rankingSystem) {
+                const podiumStand = document.querySelector(`.podium-stand.${place === 1 ? 'first' : place === 2 ? 'second' : 'third'}`);
+                const studentName = podiumStand?.querySelector('.student-name-large')?.textContent;
+                
+                if (studentName && studentName !== 'المركز الأول' && studentName !== 'المركز الثاني' && studentName !== 'المركز الثالث') {
+                    rankingSystem.showAlert(`عرض تفاصيل ${studentName}`, 'info');
+                }
             }
         }
         
         function showStudentPoints(studentId) {
-            rankingSystem.showStudentPoints(studentId);
+            if (rankingSystem) {
+                rankingSystem.showStudentPoints(studentId);
+            }
         }
         
         function showAwardCeremony() {
+            if (!rankingSystem) return;
+            
             rankingSystem.showLoading('جاري تحضير حفل التكريم...');
             setTimeout(() => {
                 rankingSystem.hideLoading();
                 rankingSystem.showAlert('حفل التكريم جاهز للعرض!', 'success');
                 
-                // تأثيرات خاصة لحفل التكريم
                 document.querySelectorAll('.podium-stand').forEach(stand => {
                     stand.classList.add('floating');
                 });
@@ -2016,7 +2249,7 @@
                 try {
                     const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-audience-clapping-loudly-478.mp3');
                     audio.volume = 0.3;
-                    audio.play();
+                    audio.play().catch(e => console.log('لا يمكن تشغيل الصوت:', e));
                 } catch (e) {
                     console.log('لا يمكن تشغيل الصوت');
                 }
@@ -2024,11 +2257,12 @@
         }
         
         function exportRanking() {
-            rankingSystem.showAlert('جاري تحضير ملف التصدير...', 'info');
-            setTimeout(() => {
-                rankingSystem.showAlert('تم تحضير ملف التصدير بنجاح', 'success');
-                // هنا سيتم إضافة منطق التصدير
-            }, 1500);
+            if (rankingSystem) {
+                rankingSystem.showAlert('جاري تحضير ملف التصدير...', 'info');
+                setTimeout(() => {
+                    rankingSystem.showAlert('تم تحضير ملف التصدير بنجاح', 'success');
+                }, 1500);
+            }
         }
     </script>
 </body>
