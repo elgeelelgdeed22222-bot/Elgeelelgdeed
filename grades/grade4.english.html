@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إحصائيات اللغة الإنجليزية - الصف الرابع الابتدائي</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* إعادة الضبط */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Tajawal', sans-serif;
+        }
+
+        /* متغيرات الألوان - أزرق للغة الإنجليزية */
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db; /* أزرق للغة الإنجليزية */
+            --accent: #2980b9;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --light: #e8f4fd;
+            --dark: #2c3e50;
+            --text: #333;
+            --text-light: #7f8c8d;
+            --blue-light: #e8f4fd;
+            --blue-medium: #3498db;
+            --blue-dark: #2980b9;
+        }
+
+        /* الجسم */
+        body {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            min-height: 100vh;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* الحاوية الرئيسية */
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+
+        /* الهيدر */
+        .header {
+            background: linear-gradient(135deg, #3498db, #2980b9); /* أزرق للغة الإنجليزية */
+            color: white;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+            border-bottom: 5px solid #1f618d;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+
+        .grade-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            font-weight: 600;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(5px);
+        }
+
+        /* لوحة التحكم */
+        .control-panel {
+            padding: 20px;
+            background: var(--blue-light);
+            border-bottom: 1px solid #d6eaf8;
+            position: relative;
+        }
+
+        .cache-indicator {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid #d6eaf8;
+        }
+
+        .cache-indicator.active {
+            color: #27ae60;
+        }
+
+        .cache-indicator i {
+            font-size: 0.9rem;
+        }
+
+        .date-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            margin-bottom: 15px;
+            border: 2px solid #d6eaf8;
+        }
+
+        .date-selector label {
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .date-selector input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #d6eaf8;
+            border-radius: 8px;
+            font-size: 1rem;
+            text-align: center;
+            font-family: 'Tajawal', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .date-selector input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .action-button {
+            flex: 1;
+            padding: 15px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            border: 2px solid #1f618d;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+            background: linear-gradient(135deg, #2980b9, #3498db);
+        }
+
+        .action-button.secondary {
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            border-color: #6c7b7d;
+            flex: 0.5;
+        }
+
+        .action-button.secondary:hover {
+            background: linear-gradient(135deg, #7f8c8d, #6c7b7d);
+        }
+
+        /* منطقة التحميل */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-light);
+            background: var(--blue-light);
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--light);
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* الرسائل */
+        .message {
+            padding: 15px;
+            margin: 15px 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+
+        .error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+
+        .info {
+            background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+            color: #0c5460;
+            border: 2px solid #3498db;
+        }
+
+        /* الإحصائيات الرئيسية */
+        .stats-section {
+            padding: 20px;
+            background: linear-gradient(to bottom, white, var(--blue-light));
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border-top: 5px solid;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        }
+
+        .stat-card.total { 
+            border-color: var(--primary); 
+        }
+        .stat-card.attempted { 
+            border-color: #3498db;
+            background: linear-gradient(to bottom right, white, #e8f4fd);
+        }
+        .stat-card.not-attempted { 
+            border-color: var(--danger);
+            background: linear-gradient(to bottom right, white, #fdeded);
+        }
+        .stat-card.perfect { 
+            border-color: var(--warning);
+            background: linear-gradient(to bottom right, white, #fef9e7);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .stat-card h3 {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--text);
+            line-height: 1;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .stat-percentage {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-top: 8px;
+            font-weight: 600;
+        }
+
+        /* توزيع الدرجات */
+        .distribution-section {
+            padding: 25px 20px;
+            background: var(--blue-light);
+            margin: 20px;
+            border-radius: 15px;
+            border: 2px solid #d6eaf8;
+        }
+
+        .distribution-section h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .distribution-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        @media (min-width: 768px) {
+            .distribution-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+
+        .score-box {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 10px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .score-box:hover {
+            transform: scale(1.05);
+        }
+
+        .score-box.perfect {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border-color: #27ae60;
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.2);
+        }
+
+        .score-box.good {
+            background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+            border-color: #3498db;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+        }
+
+        .score-box.average {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border-color: #f39c12;
+            box-shadow: 0 4px 12px rgba(243, 156, 18, 0.2);
+        }
+
+        .score-box.weak {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border-color: #e74c3c;
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+        }
+
+        .score-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .score-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-bottom: 5px;
+        }
+
+        .score-count {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        /* معلومات التحديث */
+        .update-info {
+            text-align: center;
+            padding: 15px;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            border-top: 1px solid #d6eaf8;
+            background: #ecf0f1;
+            border-bottom: 1px solid #d6eaf8;
+        }
+
+        /* الطلاب المتغيبين */
+        .missing-students {
+            padding: 20px;
+            display: none;
+            background: white;
+            margin: 20px;
+            border-radius: 15px;
+            border: 2px solid #d6eaf8;
+        }
+
+        .missing-students h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .student-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: var(--blue-light);
+            border-radius: 10px;
+            padding: 10px;
+            border: 2px solid #d6eaf8;
+        }
+
+        .student-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #d6eaf8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .student-item:hover {
+            background: white;
+            border-radius: 8px;
+        }
+
+        .student-item:last-child {
+            border-bottom: none;
+        }
+
+        .student-name {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .student-id {
+            font-family: monospace;
+            color: var(--text-light);
+            font-size: 0.8rem;
+            background: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid #d6eaf8;
+        }
+
+        /* الفوتر */
+        .footer {
+            background: linear-gradient(135deg, var(--primary), #34495e);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.85rem;
+            border-top: 5px solid #3498db;
+        }
+
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .footer a:hover {
+            color: #2980b9;
+            text-decoration: underline;
+        }
+
+        /* التجاوب */
+        @media (max-width: 480px) {
+            .container {
+                border-radius: 15px;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .distribution-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .score-box {
+                padding: 12px 8px;
+            }
+            
+            .score-value {
+                font-size: 1.5rem;
+            }
+            
+            .date-selector {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .date-selector label {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .cache-indicator {
+                position: relative;
+                top: 0;
+                left: 0;
+                margin-bottom: 10px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- الهيدر -->
+        <div class="header">
+            <h1><i class="fas fa-language"></i> إحصائيات اللغة الإنجليزية</h1>
+            <p>الصف الرابع الابتدائي</p>
+            <div class="grade-badge">
+                <i class="fas fa-graduation-cap"></i> الصف الرابع - المرحلة الابتدائية
+            </div>
+        </div>
+
+        <!-- لوحة التحكم -->
+        <div class="control-panel">
+            <div class="cache-indicator" id="cacheIndicator">
+                <i class="fas fa-database"></i>
+                <span>الكاش: غير نشط</span>
+            </div>
+            
+            <div class="date-selector">
+                <label for="examDate"><i class="fas fa-calendar-alt"></i> تاريخ الامتحان:</label>
+                <input type="date" id="examDate">
+            </div>
+            
+            <div class="action-buttons">
+                <button class="action-button" onclick="loadStatistics(false)">
+                    <i class="fas fa-sync-alt"></i> تحديث الإحصائيات
+                </button>
+                <button class="action-button secondary" onclick="loadStatistics(true)">
+                    <i class="fas fa-redo"></i> تحديث قسري
+                </button>
+            </div>
+        </div>
+
+        <!-- الرسائل -->
+        <div id="message" class="message"></div>
+
+        <!-- منطقة التحميل -->
+        <div class="loading" id="loading">
+            <div class="loader"></div>
+            <p>جاري تحميل البيانات...</p>
+            <p class="stat-percentage" id="loadingSource"></p>
+        </div>
+
+        <!-- المحتوى الرئيسي -->
+        <div id="content" style="display: none;">
+            <!-- الإحصائيات الرئيسية -->
+            <div class="stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card total">
+                        <i class="fas fa-users stat-icon" style="color: var(--primary);"></i>
+                        <h3>إجمالي الطلاب</h3>
+                        <div class="stat-value" id="totalStudents">0</div>
+                    </div>
+                    
+                    <div class="stat-card attempted">
+                        <i class="fas fa-check-circle stat-icon" style="color: #3498db;"></i>
+                        <h3>أدوا الامتحان</h3>
+                        <div class="stat-value" id="studentsAttempted">0</div>
+                        <div class="stat-percentage" id="attemptedPercentage">0%</div>
+                    </div>
+                    
+                    <div class="stat-card not-attempted">
+                        <i class="fas fa-times-circle stat-icon" style="color: var(--danger);"></i>
+                        <h3>لم يؤدوا</h3>
+                        <div class="stat-value" id="studentsNotAttempted">0</div>
+                    </div>
+                    
+                    <div class="stat-card perfect">
+                        <i class="fas fa-star stat-icon" style="color: var(--warning);"></i>
+                        <h3>الدرجة النهائية</h3>
+                        <div class="stat-value" id="perfectScores">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- توزيع الدرجات -->
+            <div class="distribution-section">
+                <h2><i class="fas fa-chart-bar"></i> توزيع الدرجات</h2>
+                <div class="distribution-grid" id="scoreDistribution">
+                    <!-- سيتم ملؤه تلقائياً -->
+                </div>
+            </div>
+
+            <!-- الطلاب المتغيبين -->
+            <div class="missing-students" id="missingSection">
+                <h3><i class="fas fa-user-minus"></i> الطلاب المتغيبين</h3>
+                <div class="student-list" id="missingStudents">
+                    <!-- سيتم ملؤه تلقائياً -->
+                </div>
+            </div>
+
+            <!-- معلومات التحديث -->
+            <div class="update-info">
+                <i class="fas fa-clock"></i>
+                <strong>آخر تحديث:</strong> <span id="lastUpdate">--</span>
+                <span id="cacheSource" style="margin-right: 10px;"></span>
+            </div>
+        </div>
+
+        <!-- الفوتر -->
+        <div class="footer">
+            <p>برمجة وتصميم <a href="#">مؤسسة اديوتيك ايجيبت</a></p>
+            <p>جميع الحقوق محفوظة © 2025</p>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    
+    <script>
+        // ========== تهيئة Firebase ==========
+        const firebaseConfig = {
+            apiKey: "AIzaSyCtxkYnDVupiJz8iyAzI_oqaZGBaKYYIhY",
+            authDomain: "elgeelelgdeed-1.firebasestorage.app",
+            projectId: "elgeelelgdeed-1",
+            storageBucket: "elgeelelgdeed-1.firebasestorage.app",
+            messagingSenderId: "1031644675136",
+            appId: "1:1031644675136:web:d1acdcfa1530bee72e33a5"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        const CURRENT_SUBJECT = "english";
+        const CURRENT_GRADE = "4";
+        const CLASS_NAME = "elementary";
+        
+        let currentExamDate = new Date().toISOString().split('T')[0];
+        let missingStudents = [];
+        
+        // ========== نظام الكاش المتطور ==========
+        class AdvancedFirebaseCache {
+            constructor() {
+                this.cache = {
+                    memory: new Map(),      // الذاكرة المؤقتة (أسرع)
+                    localStorage: 'fb_cache_grade4_english_' // مفتاح التخزين المحلي
+                };
+                
+                // إعدادات الكاش
+                this.config = {
+                    ttl: {
+                        students: 30 * 60 * 1000,      // 30 دقيقة لبيانات الطلاب
+                        results: 15 * 60 * 1000,       // 15 دقيقة لنتائج الامتحان
+                        statistics: 10 * 60 * 1000     // 10 دقيقة للإحصائيات المجمعة
+                    },
+                    maxSize: {
+                        memory: 50,        // 50 عنصر في الذاكرة
+                        localStorage: 100  // 100 عنصر في التخزين المحلي
+                    }
+                };
+                
+                // إحصائيات الاستخدام
+                this.stats = {
+                    hits: 0,
+                    misses: 0,
+                    saves: 0
+                };
+                
+                this.initFromStorage();
+            }
+            
+            // إنشاء مفتاح فريد للكاش
+            generateKey(collection, filters, grade, date = null) {
+                let key = `${collection}_${grade}_${CURRENT_SUBJECT}`;
+                
+                if (date) key += `_${date.replace(/-/g, '')}`;
+                
+                if (filters && Object.keys(filters).length > 0) {
+                    const filterStr = JSON.stringify(filters);
+                    key += `_${this.hashString(filterStr)}`;
+                }
+                
+                return key;
+            }
+            
+            // دالة تجزئة للمفاتيح
+            hashString(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    const char = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash;
+                }
+                return Math.abs(hash).toString(16).substring(0, 8);
+            }
+            
+            // حفظ البيانات في الكاش
+            async set(cacheKey, data, cacheType = 'memory', ttl = null, source = 'firebase') {
+                const cacheData = {
+                    data: data,
+                    timestamp: Date.now(),
+                    ttl: ttl || this.getDefaultTTL(cacheKey),
+                    accessCount: 0,
+                    source: source
+                };
+                
+                if (cacheType === 'memory') {
+                    // تطبيق سياسة LRU (الأقل استخداماً مؤخراً)
+                    if (this.cache.memory.size >= this.config.maxSize.memory) {
+                        this.evictLRU('memory');
+                    }
+                    this.cache.memory.set(cacheKey, cacheData);
+                } else if (cacheType === 'localStorage') {
+                    await this.saveToLocalStorage(cacheKey, cacheData);
+                }
+                
+                this.stats.saves++;
+                return cacheData;
+            }
+            
+            // جلب البيانات من الكاش
+            async get(cacheKey) {
+                // 1. البحث في الذاكرة أولاً (الأسرع)
+                if (this.cache.memory.has(cacheKey)) {
+                    const cached = this.cache.memory.get(cacheKey);
+                    if (!this.isExpired(cached)) {
+                        cached.accessCount++;
+                        cached.lastAccessed = Date.now();
+                        this.stats.hits++;
+                        return cached;
+                    }
+                    this.cache.memory.delete(cacheKey); // حذف إذا انتهت صلاحيته
+                }
+                
+                // 2. البحث في التخزين المحلي
+                const localStorageData = await this.getFromLocalStorage(cacheKey);
+                if (localStorageData && !this.isExpired(localStorageData)) {
+                    // نقل إلى الذاكرة للتسريع
+                    await this.set(cacheKey, localStorageData.data, 'memory', localStorageData.ttl, localStorageData.source);
+                    localStorageData.accessCount++;
+                    await this.saveToLocalStorage(cacheKey, localStorageData);
+                    this.stats.hits++;
+                    return localStorageData;
+                }
+                
+                this.stats.misses++;
+                return null;
+            }
+            
+            // التحقق من انتهاء الصلاحية
+            isExpired(cacheItem) {
+                return Date.now() - cacheItem.timestamp > cacheItem.ttl;
+            }
+            
+            // الحصول على وقت الصلاحية الافتراضي
+            getDefaultTTL(cacheKey) {
+                if (cacheKey.includes('students')) return this.config.ttl.students;
+                if (cacheKey.includes('results')) return this.config.ttl.results;
+                if (cacheKey.includes('statistics')) return this.config.ttl.statistics;
+                return 5 * 60 * 1000; // 5 دقائق افتراضياً
+            }
+            
+            // حذف العنصر الأقل استخداماً
+            evictLRU(cacheType) {
+                if (cacheType === 'memory') {
+                    let lruKey = null;
+                    let minAccess = Infinity;
+                    
+                    for (const [key, value] of this.cache.memory.entries()) {
+                        if (value.accessCount < minAccess) {
+                            minAccess = value.accessCount;
+                            lruKey = key;
+                        }
+                    }
+                    
+                    if (lruKey) {
+                        this.cache.memory.delete(lruKey);
+                    }
+                }
+            }
+            
+            // ========== إدارة localStorage ==========
+            async saveToLocalStorage(key, data) {
+                try {
+                    const storageKey = this.cache.localStorage;
+                    const allCache = await this.getAllLocalStorage();
+                    
+                    // تطبيق الحد الأقصى للتخزين
+                    if (Object.keys(allCache).length >= this.config.maxSize.localStorage) {
+                        await this.cleanupLocalStorage();
+                    }
+                    
+                    allCache[key] = data;
+                    localStorage.setItem(storageKey, JSON.stringify(allCache));
+                    return true;
+                } catch (e) {
+                    console.warn('خطأ في حفظ الكاش:', e);
+                    return false;
+                }
+            }
+            
+            async getFromLocalStorage(key) {
+                try {
+                    const allCache = await this.getAllLocalStorage();
+                    return allCache[key] || null;
+                } catch (e) {
+                    return null;
+                }
+            }
+            
+            async getAllLocalStorage() {
+                try {
+                    const data = localStorage.getItem(this.cache.localStorage);
+                    return data ? JSON.parse(data) : {};
+                } catch (e) {
+                    return {};
+                }
+            }
+            
+            async cleanupLocalStorage() {
+                try {
+                    const allCache = await this.getAllLocalStorage();
+                    const now = Date.now();
+                    
+                    // حذف العناصر المنتهية الصلاحية أولاً
+                    Object.keys(allCache).forEach(key => {
+                        if (this.isExpired(allCache[key])) {
+                            delete allCache[key];
+                        }
+                    });
+                    
+                    // إذا ما زال ممتلئاً، احذف الأقدم
+                    if (Object.keys(allCache).length >= this.config.maxSize.localStorage) {
+                        const sorted = Object.entries(allCache)
+                            .sort((a, b) => a[1].timestamp - b[1].timestamp);
+                        
+                        const toRemove = sorted.slice(0, 20); // احذف 20 عنصراً قديماً
+                        
+                        toRemove.forEach(([key]) => {
+                            delete allCache[key];
+                        });
+                    }
+                    
+                    localStorage.setItem(this.cache.localStorage, JSON.stringify(allCache));
+                } catch (e) {
+                    console.warn('خطأ في تنظيف الكاش:', e);
+                }
+            }
+            
+            // تهيئة التخزين المحلي
+            async initFromStorage() {
+                try {
+                    // تنظيف الكاش القديم
+                    await this.cleanupLocalStorage();
+                } catch (e) {
+                    console.warn('خطأ في تهيئة الكاش:', e);
+                }
+            }
+            
+            // إحصائيات الكاش
+            getStats() {
+                return {
+                    ...this.stats,
+                    memorySize: this.cache.memory.size,
+                    hitRate: this.stats.hits + this.stats.misses > 0 ? 
+                        Math.round((this.stats.hits / (this.stats.hits + this.stats.misses)) * 100) : 0
+                };
+            }
+            
+            // مسح الكاش بالكامل
+            async clearAll() {
+                this.cache.memory.clear();
+                localStorage.removeItem(this.cache.localStorage);
+                this.stats = { hits: 0, misses: 0, saves: 0 };
+            }
+            
+            // تحديث مؤشر الكاش
+            updateIndicator(hit = false) {
+                const indicator = document.getElementById('cacheIndicator');
+                const stats = this.getStats();
+                
+                if (hit) {
+                    indicator.className = 'cache-indicator active';
+                    indicator.innerHTML = `<i class="fas fa-database"></i> <span>الكاش: نشط (${stats.hitRate}% نجاح)</span>`;
+                } else {
+                    indicator.className = 'cache-indicator';
+                    indicator.innerHTML = `<i class="fas fa-database"></i> <span>الكاش: ${stats.saves > 0 ? 'جاهز' : 'غير نشط'}</span>`;
+                }
+            }
+        }
+        
+        // ========== إنشاء مثيل الكاش ==========
+        const firebaseCache = new AdvancedFirebaseCache();
+        
+        // ========== دوال مساعدة للعرض ==========
+        function showMessage(type, text) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${text}`;
+            messageDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 3000);
+            }
+        }
+        
+        // ========== دوال جلب البيانات مع الكاش ==========
+        async function getStudentsWithCache() {
+            const cacheKey = firebaseCache.generateKey(
+                'students',
+                { grade: CURRENT_GRADE, className: CLASS_NAME },
+                CURRENT_GRADE
+            );
+            
+            const cached = await firebaseCache.get(cacheKey);
+            if (cached) {
+                console.log('✅ تم جلب بيانات الطلاب من الكاش');
+                firebaseCache.updateIndicator(true);
+                return cached.data;
+            }
+            
+            // جلب من Firebase
+            const studentsSnapshot = await db.collection('students')
+                .where('grade', '==', CURRENT_GRADE)
+                .where('className', '==', CLASS_NAME)
+                .get();
+            
+            if (studentsSnapshot.empty) {
+                throw new Error('لا يوجد طلاب مسجلين في الصف الرابع');
+            }
+            
+            const students = studentsSnapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: data.studentId,
+                    name: data.fullName || 'غير معروف'
+                };
+            });
+            
+            // حفظ في الكاش
+            await firebaseCache.set(cacheKey, students, 'localStorage', null, 'firebase');
+            console.log('💾 تم حفظ بيانات الطلاب في الكاش');
+            firebaseCache.updateIndicator(false);
+            
+            return students;
+        }
+        
+        async function getExamResultsWithCache(examDate) {
+            const cacheKey = firebaseCache.generateKey(
+                'results',
+                { subject: CURRENT_SUBJECT, grade: CURRENT_GRADE },
+                CURRENT_GRADE,
+                examDate
+            );
+            
+            const cached = await firebaseCache.get(cacheKey);
+            if (cached) {
+                console.log('✅ تم جلب نتائج الامتحان من الكاش');
+                firebaseCache.updateIndicator(true);
+                return cached.data;
+            }
+            
+            // جلب من Firebase
+            const resultsSnapshot = await db.collection('exam_results')
+                .where('subject', '==', CURRENT_SUBJECT)
+                .where('grade', '==', CURRENT_GRADE)
+                .where('examDate', '==', examDate)
+                .get();
+            
+            const results = resultsSnapshot.docs.map(doc => ({
+                ...doc.data(),
+                docId: doc.id
+            }));
+            
+            // حفظ في الكاش
+            await firebaseCache.set(cacheKey, results, 'localStorage', null, 'firebase');
+            console.log('💾 تم حفظ نتائج الامتحان في الكاش');
+            firebaseCache.updateIndicator(false);
+            
+            return results;
+        }
+        
+        // ========== الدالة الرئيسية ==========
+        async function loadStatistics(forceRefresh = false) {
+            try {
+                const dateInput = document.getElementById('examDate').value;
+                if (!dateInput) {
+                    showMessage('error', 'يرجى تحديد تاريخ الامتحان');
+                    return;
+                }
+                
+                currentExamDate = dateInput;
+                
+                // إظهار شاشة التحميل
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('content').style.display = 'none';
+                document.getElementById('missingSection').style.display = 'none';
+                document.getElementById('loadingSource').textContent = 'جاري البحث في قاعدة البيانات...';
+                
+                // مفتاح الكاش للإحصائيات المجمعة
+                const statisticsCacheKey = firebaseCache.generateKey(
+                    'statistics',
+                    { subject: CURRENT_SUBJECT, grade: CURRENT_GRADE, date: currentExamDate },
+                    CURRENT_GRADE,
+                    currentExamDate
+                );
+                
+                // محاولة جلب الإحصائيات من الكاش
+                if (!forceRefresh) {
+                    const cachedStats = await firebaseCache.get(statisticsCacheKey);
+                    if (cachedStats) {
+                        console.log('✅ تم جلب الإحصائيات من الكاش');
+                        document.getElementById('loadingSource').textContent = 'جاري تحميل البيانات من الكاش المحلي...';
+                        
+                        // عرض البيانات المخزنة
+                        displayStatistics(cachedStats.data, cachedStats.source);
+                        showMessage('success', `تم تحميل الإحصائيات من ${cachedStats.source === 'cache' ? 'الكاش المحلي' : 'Firebase'}`);
+                        return;
+                    }
+                }
+                
+                // إذا لم تكن في الكاش أو طلب تحديث قسري
+                document.getElementById('loadingSource').textContent = forceRefresh ? 
+                    'جاري التحديث القسري من قاعدة البيانات...' : 
+                    'جاري تحميل البيانات من قاعدة البيانات...';
+                
+                // جلب البيانات من Firebase
+                const [studentsData, resultsData] = await Promise.all([
+                    getStudentsWithCache(),
+                    getExamResultsWithCache(currentExamDate)
+                ]);
+                
+                // معالجة البيانات
+                const statistics = processStatistics(studentsData, resultsData);
+                
+                // حفظ في الكاش
+                await firebaseCache.set(statisticsCacheKey, statistics, 'localStorage', null, 'firebase');
+                console.log('💾 تم حفظ الإحصائيات في الكاش');
+                
+                // عرض البيانات
+                displayStatistics(statistics, 'firebase');
+                
+                showMessage('success', `تم تحميل إحصائيات ${statistics.totalStudents} طالباً ${forceRefresh ? '(تحديث قسري)' : ''}`);
+                
+            } catch (error) {
+                console.error('خطأ:', error);
+                handleLoadError(error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+            }
+        }
+        
+        // ========== معالجة البيانات ==========
+        function processStatistics(studentsData, resultsData) {
+            const totalStudents = studentsData.length;
+            const studentsAttempted = resultsData.length;
+            const studentsNotAttempted = totalStudents - studentsAttempted;
+            const attemptedPercentage = totalStudents > 0 ? 
+                Math.round((studentsAttempted / totalStudents) * 100) : 0;
+            
+            const attemptedIds = resultsData.map(result => result.studentId);
+            const missingStudents = studentsData.filter(student => !attemptedIds.includes(student.id));
+            
+            const scoreDistribution = { 
+                "10": 0, "9": 0, "8": 0, "7": 0, "6": 0, 
+                "5": 0, "4": 0, "3": 0, "2": 0, "1": 0, "0": 0 
+            };
+            let perfectScores = 0;
+            
+            resultsData.forEach(result => {
+                const score = Math.round(result.score);
+                scoreDistribution[score.toString()]++;
+                
+                if (score === 10) perfectScores++;
+            });
+            
+            return {
+                totalStudents: totalStudents,
+                studentsAttempted: studentsAttempted,
+                studentsNotAttempted: studentsNotAttempted,
+                attemptedPercentage: attemptedPercentage,
+                scoreDistribution: scoreDistribution,
+                perfectScores: perfectScores,
+                missingStudents: missingStudents,
+                timestamp: Date.now()
+            };
+        }
+        
+        // ========== عرض البيانات ==========
+        function displayStatistics(data, source = 'firebase') {
+            // تحديث المؤشرات
+            document.getElementById('totalStudents').textContent = data.totalStudents;
+            document.getElementById('studentsAttempted').textContent = data.studentsAttempted;
+            document.getElementById('studentsNotAttempted').textContent = data.studentsNotAttempted;
+            document.getElementById('perfectScores').textContent = data.perfectScores;
+            document.getElementById('attemptedPercentage').textContent = data.attemptedPercentage + '%';
+            
+            // توزيع الدرجات
+            const distributionGrid = document.getElementById('scoreDistribution');
+            distributionGrid.innerHTML = '';
+            
+            for (let score = 10; score >= 0; score--) {
+                const count = data.scoreDistribution[score.toString()] || 0;
+                let boxClass = 'score-box';
+                
+                if (score === 10) boxClass += ' perfect';
+                else if (score >= 8) boxClass += ' good';
+                else if (score >= 5) boxClass += ' average';
+                else boxClass += ' weak';
+                
+                distributionGrid.innerHTML += `
+                    <div class="${boxClass}">
+                        <div class="score-value">${score}</div>
+                        <div class="score-label">درجة</div>
+                        <div class="score-count">${count}</div>
+                    </div>
+                `;
+            }
+            
+            // الطلاب المتغيبين
+            if (data.missingStudents && data.missingStudents.length > 0) {
+                const missingList = document.getElementById('missingStudents');
+                missingList.innerHTML = '';
+                
+                data.missingStudents.forEach(student => {
+                    missingList.innerHTML += `
+                        <div class="student-item">
+                            <span class="student-name">${student.name}</span>
+                            <span class="student-id">${student.id}</span>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('missingSection').style.display = 'block';
+            }
+            
+            // تحديث معلومات الزمن والمصدر
+            const now = new Date().toLocaleString('ar-EG', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('lastUpdate').textContent = now;
+            
+            // إظهار مصدر البيانات
+            const cacheSource = document.getElementById('cacheSource');
+            if (source === 'cache') {
+                cacheSource.innerHTML = '<i class="fas fa-database" style="color: #27ae60;"></i> <span style="color: #27ae60;">(مخزن محلياً)</span>';
+            } else {
+                cacheSource.innerHTML = '<i class="fas fa-cloud" style="color: #3498db;"></i> <span style="color: #3498db;">(مباشر من السحابة)</span>';
+            }
+            
+            // إخفاء شاشة التحميل وإظهار المحتوى
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+            
+            // تحديث إحصائيات الكاش
+            firebaseCache.updateIndicator(source === 'cache');
+        }
+        
+        // ========== معالجة الأخطاء ==========
+        function handleLoadError(error) {
+            if (error.message.includes('لا يوجد طلاب')) {
+                showMessage('error', 'لا يوجد طلاب مسجلين في الصف الرابع الابتدائي');
+            } else if (error.message.includes('network') || error.message.includes('اتصال')) {
+                showMessage('error', 'فشل الاتصال بالإنترنت. جاري استخدام البيانات المخزنة محلياً');
+                // يمكن إضافة منطق لاستخدام آخر بيانات مخزنة هنا
+            } else {
+                showMessage('error', `خطأ في تحميل البيانات: ${error.message}`);
+            }
+        }
+        
+        // ========== دوال التهيئة ==========
+        async function findDateWithResults() {
+            try {
+                const resultsSnapshot = await db.collection('exam_results')
+                    .where('subject', '==', CURRENT_SUBJECT)
+                    .where('grade', '==', CURRENT_GRADE)
+                    .orderBy('examDate', 'desc')
+                    .limit(1)
+                    .get();
+                
+                if (!resultsSnapshot.empty) {
+                    const lastResult = resultsSnapshot.docs[0].data();
+                    return lastResult.examDate;
+                }
+            } catch (error) {
+                console.error('خطأ في البحث عن تاريخ:', error);
+            }
+            
+            return new Date().toISOString().split('T')[0];
+        }
+        
+        function setTodayDate() {
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('examDate');
+            dateInput.value = today;
+            dateInput.max = today;
+        }
+        
+        async function initPage() {
+            try {
+                // ضبط التاريخ الافتراضي
+                setTodayDate();
+                
+                // البحث عن آخر تاريخ به نتائج
+                const dateWithResults = await findDateWithResults();
+                document.getElementById('examDate').value = dateWithResults;
+                currentExamDate = dateWithResults;
+                
+                // تحميل الإحصائيات
+                await loadStatistics(false);
+                
+            } catch (error) {
+                console.error('خطأ في تهيئة الصفحة:', error);
+                showMessage('error', 'حدث خطأ في تهيئة الصفحة');
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+            }
+        }
+        
+        // ========== بدء التشغيل ==========
+        window.onload = initPage;
+    </script>
+</body>
+</html>
