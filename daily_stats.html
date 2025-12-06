@@ -1048,12 +1048,15 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     
     <script>
-        // 🚀 نظام الإحصائيات اليومية الشاملة
+        // 🚀 نظام الإحصائيات اليومية الشاملة - النسخة المصححة
         class DailyStatsSystem {
             constructor() {
                 this.initializeFirebase();
                 this.initializeCache();
-                this.selectedDate = new Date().toISOString().split('T')[0];
+                
+                // 🔥 **الإصلاح الأول: معالجة URL parameters أولاً**
+                this.initializeFromURL();
+                
                 this.grades = ['4', '5', '6', '7', '8'];
                 this.subjects = ['arabic', 'english', 'math', 'science', 'studies'];
                 this.gradeNames = {
@@ -1063,23 +1066,80 @@
                     '7': 'الصف الأول الإعدادي',
                     '8': 'الصف الثاني الإعدادي'
                 };
+                
+                // التحقق من صحة التاريخ المحدد
+                if (!this.isValidDate(this.selectedDate)) {
+                    this.selectedDate = new Date().toISOString().split('T')[0];
+                }
+                
                 this.initializeSystem();
             }
             
-            initializeFirebase() {
-                const firebaseConfig = {
-                    apiKey: "AIzaSyCtxkYnDVupiJz8iyAzI_oqaZGBaKYYIhY",
-                    authDomain: "elgeelelgdeed-1.firebasestorage.app",
-                    projectId: "elgeelelgdeed-1",
-                    storageBucket: "elgeelelgdeed-1.firebasestorage.app",
-                    messagingSenderId: "1031644675136",
-                    appId: "1:1031644675136:web:d1acdcfa1530bee72e33a5"
-                };
+            initializeFromURL() {
+                const urlParams = new URLSearchParams(window.location.search);
                 
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(firebaseConfig);
+                // 🔥 **الإصلاح: الأولوية للـURL ثم sessionStorage ثم localStorage**
+                const dateParam = urlParams.get('date');
+                const gradeParam = urlParams.get('grade');
+                const sourceParam = urlParams.get('source');
+                
+                if (dateParam && this.isValidDate(dateParam)) {
+                    this.selectedDate = dateParam;
+                    console.log('📅 التاريخ من الـURL:', this.selectedDate);
+                } else if (sessionStorage.getItem('selectedDate')) {
+                    this.selectedDate = sessionStorage.getItem('selectedDate');
+                    console.log('📅 التاريخ من sessionStorage:', this.selectedDate);
+                } else if (localStorage.getItem('selectedDate')) {
+                    this.selectedDate = localStorage.getItem('selectedDate');
+                    console.log('📅 التاريخ من localStorage:', this.selectedDate);
+                } else {
+                    this.selectedDate = new Date().toISOString().split('T')[0];
+                    console.log('📅 التاريخ من اليوم:', this.selectedDate);
                 }
-                this.db = firebase.firestore();
+                
+                // حفظ الصف المحدد إذا جاء من الصفحة الرئيسية
+                if (gradeParam && sourceParam === 'main') {
+                    sessionStorage.setItem('selectedGrade', gradeParam);
+                    console.log('👥 الصف من الصفحة الرئيسية:', gradeParam);
+                }
+                
+                // تنظيف sessionStorage إذا كانت الزيارة مباشرة
+                if (!sourceParam) {
+                    sessionStorage.removeItem('selectedGrade');
+                    sessionStorage.removeItem('selectedDate');
+                }
+            }
+            
+            isValidDate(dateString) {
+                try {
+                    const date = new Date(dateString);
+                    return date instanceof Date && !isNaN(date) && dateString.length === 10;
+                } catch {
+                    return false;
+                }
+            }
+            
+            initializeFirebase() {
+                // استخدام اتصال Firebase المشترك إذا كان موجوداً
+                if (window.firebaseApp) {
+                    this.db = window.firebaseDB;
+                    console.log('✅ Firebase: استخدام اتصال مشترك');
+                } else {
+                    const firebaseConfig = {
+                        apiKey: "AIzaSyCtxkYnDVupiJz8iyAzI_oqaZGBaKYYIhY",
+                        authDomain: "elgeelelgdeed-1.firebasestorage.app",
+                        projectId: "elgeelelgdeed-1",
+                        storageBucket: "elgeelelgdeed-1.firebasestorage.app",
+                        messagingSenderId: "1031644675136",
+                        appId: "1:1031644675136:web:d1acdcfa1530bee72e33a5"
+                    };
+                    
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(firebaseConfig);
+                    }
+                    this.db = firebase.firestore();
+                    console.log('✅ Firebase: اتصال جديد تم تهيئته');
+                }
             }
             
             initializeCache() {
@@ -1093,7 +1153,8 @@
                         dailyStats: 10 * 60 * 1000,  // 10 دقائق
                         subjects: 15 * 60 * 1000,    // 15 دقيقة
                         grades: 10 * 60 * 1000       // 10 دقائق
-                    }
+                    },
+                    maxSize: 20 * 1024 * 1024 // 20MB
                 };
             }
             
@@ -1103,27 +1164,42 @@
                 this.loadOverview();
                 this.loadSubjectsComparison();
                 this.setupEventListeners();
+                
+                // 🔥 **الإصلاح: التبويب التلقائي بناء على الصف المحدد**
+                this.activateSelectedGradeTab();
             }
             
             setupDate() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const dateParam = urlParams.get('date');
-                
-                if (dateParam) {
-                    this.selectedDate = dateParam;
-                } else if (localStorage.getItem('selectedDate')) {
-                    this.selectedDate = localStorage.getItem('selectedDate');
+                const dateInput = document.getElementById('selectedDate');
+                if (dateInput) {
+                    dateInput.value = this.selectedDate;
+                    dateInput.max = new Date().toISOString().split('T')[0];
+                    
+                    // تحديث نص التاريخ في التقرير
+                    const reportDateElement = document.getElementById('reportDate');
+                    if (reportDateElement) {
+                        reportDateElement.textContent = this.formatDate(this.selectedDate);
+                    }
                 }
-                
-                document.getElementById('selectedDate').value = this.selectedDate;
-                document.getElementById('selectedDate').max = new Date().toISOString().split('T')[0];
-                
-                document.getElementById('reportDate').textContent = this.formatDate(this.selectedDate);
+            }
+            
+            activateSelectedGradeTab() {
+                const selectedGrade = sessionStorage.getItem('selectedGrade');
+                if (selectedGrade && this.grades.includes(selectedGrade)) {
+                    setTimeout(() => {
+                        this.switchTab(selectedGrade);
+                    }, 500);
+                }
             }
             
             setupTabs() {
                 const tabsContainer = document.getElementById('gradesTabs');
                 const contentContainer = document.getElementById('gradesContent');
+                
+                if (!tabsContainer || !contentContainer) {
+                    console.error('❌ عناصر التبويبات غير موجودة');
+                    return;
+                }
                 
                 this.grades.forEach((grade, index) => {
                     // إنشاء زر التبويب
@@ -1155,7 +1231,8 @@
                 
                 // تحميل بيانات أول تبويب
                 if (this.grades.length > 0) {
-                    this.loadGradeData(this.grades[0]);
+                    const initialGrade = sessionStorage.getItem('selectedGrade') || this.grades[0];
+                    this.loadGradeData(initialGrade);
                 }
             }
             
@@ -1164,16 +1241,27 @@
                 document.querySelectorAll('.tab-btn').forEach(btn => {
                     btn.classList.remove('active');
                 });
-                document.querySelector(`.grade${grade}`).classList.add('active');
+                
+                const tabBtn = document.querySelector(`.grade${grade}`);
+                if (tabBtn) {
+                    tabBtn.classList.add('active');
+                }
                 
                 // تحديث المحتوى النشط
                 document.querySelectorAll('.tab-pane').forEach(pane => {
                     pane.classList.remove('active');
                 });
-                document.getElementById(`grade${grade}Pane`).classList.add('active');
+                
+                const tabPane = document.getElementById(`grade${grade}Pane`);
+                if (tabPane) {
+                    tabPane.classList.add('active');
+                }
                 
                 // تحميل البيانات إذا لم تكن محملة
                 this.loadGradeData(grade);
+                
+                // حفظ التبويب النشط
+                sessionStorage.setItem('selectedGrade', grade);
             }
             
             async loadOverview() {
@@ -1181,13 +1269,29 @@
                 
                 try {
                     const overview = await this.getDailyOverview();
-                    this.displayOverview(overview);
-                    this.updateComparisonChart(overview.grades);
+                    if (overview) {
+                        this.displayOverview(overview);
+                        this.updateComparisonChart(overview.grades);
+                    } else {
+                        this.displayError('overviewCard', 'لا توجد بيانات للتاريخ المحدد');
+                    }
                     this.hideLoading();
                 } catch (error) {
                     console.error('❌ خطأ في تحميل النظرة العامة:', error);
-                    this.showAlert('خطأ في تحميل البيانات', 'error');
+                    this.displayError('overviewCard', 'خطأ في تحميل البيانات');
                     this.hideLoading();
+                }
+            }
+            
+            displayError(elementId, message) {
+                const container = document.getElementById(elementId);
+                if (container) {
+                    container.innerHTML = `
+                        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--danger);">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 2rem;"></i>
+                            <p style="margin-top: 15px;">${message}</p>
+                        </div>
+                    `;
                 }
             }
             
@@ -1205,8 +1309,12 @@
                 
                 const overview = this.calculateOverview(gradesData);
                 
-                this.saveToCache(cacheKey, overview, this.cacheConfig.ttl.dailyStats);
-                return overview;
+                if (overview.totalStudents > 0) {
+                    this.saveToCache(cacheKey, overview, this.cacheConfig.ttl.dailyStats);
+                    return overview;
+                }
+                
+                return null;
             }
             
             calculateOverview(gradesData) {
@@ -1217,20 +1325,21 @@
                 let totalExams = 0;
                 
                 gradesData.forEach(grade => {
-                    totalStudents += grade.totalStudents;
-                    totalAttended += grade.studentsAttempted;
-                    totalPerfect += grade.perfectScores;
-                    totalScore += grade.averageScore * grade.studentsAttempted;
-                    totalExams += grade.studentsAttempted;
+                    totalStudents += grade.totalStudents || 0;
+                    totalAttended += grade.studentsAttempted || 0;
+                    totalPerfect += grade.perfectScores || 0;
+                    totalScore += (grade.averageScore || 0) * (grade.studentsAttempted || 0);
+                    totalExams += grade.studentsAttempted || 0;
                 });
                 
                 const attendanceRate = totalStudents > 0 ? 
                     Math.round((totalAttended / totalStudents) * 100) : 0;
                 
+                // 🔥 **الإصلاح: حساب المتوسط بشكل آمن**
                 const averageScore = totalAttended > 0 ? 
-                    (totalScore / totalAttended).toFixed(1) : 0;
+                    parseFloat((totalScore / totalAttended).toFixed(2)) : 0.0;
                 
-                const studentsAbsent = totalStudents - totalAttended;
+                const studentsAbsent = Math.max(0, totalStudents - totalAttended);
                 
                 return {
                     totalStudents,
@@ -1238,12 +1347,15 @@
                     studentsAbsent,
                     attendanceRate,
                     perfectScores: totalPerfect,
-                    averageScore: parseFloat(averageScore),
+                    averageScore: averageScore,
                     grades: gradesData
                 };
             }
             
             displayOverview(overview) {
+                if (!overview) return;
+                
+                // 🔥 **الإصلاح: استخدام دالة formatNumber الآمنة**
                 document.getElementById('totalStudents').textContent = 
                     this.formatNumber(overview.totalStudents);
                 
@@ -1254,13 +1366,13 @@
                     this.formatNumber(overview.studentsAbsent);
                 
                 document.getElementById('attendanceRate').textContent = 
-                    `${overview.attendanceRate}%`;
+                    `${this.formatNumber(overview.attendanceRate)}%`;
                 
                 document.getElementById('perfectScores').textContent = 
                     this.formatNumber(overview.perfectScores);
                 
                 document.getElementById('averageScore').textContent = 
-                    overview.averageScore;
+                    this.formatNumber(overview.averageScore, 2);
                 
                 // إضافة تأثيرات للقيم المميزة
                 if (overview.attendanceRate >= 90) {
@@ -1286,6 +1398,10 @@
                         <div style="text-align: center; padding: 40px; color: var(--danger);">
                             <i class="fas fa-exclamation-triangle" style="font-size: 3rem;"></i>
                             <p style="margin-top: 15px;">خطأ في تحميل البيانات</p>
+                            <button onclick="dailyStatsSystem.loadGradeData('${grade}')" 
+                                    style="margin-top: 15px; padding: 8px 16px; background: var(--danger); color: white; border: none; border-radius: var(--radius-sm); cursor: pointer;">
+                                إعادة المحاولة
+                            </button>
                         </div>
                     `;
                 }
@@ -1300,19 +1416,25 @@
                 }
                 
                 try {
-                    // محاولة جلب من daily_stats أولاً
+                    // 🔥 **الإصلاح الحاسم: حساب المادة الصحيحة للتاريخ المحدد**
                     const subject = this.getSubjectByDate(this.selectedDate);
+                    
+                    console.log(`📊 حساب إحصائيات الصف ${grade} للمادة ${subject} بتاريخ ${this.selectedDate}`);
+                    
+                    // محاولة جلب من daily_stats أولاً
                     const dailyStatsDoc = await this.db.collection('daily_stats')
                         .doc(`${subject}_${grade}_${this.selectedDate}`)
                         .get();
                     
                     if (dailyStatsDoc.exists) {
                         const data = dailyStatsDoc.data();
+                        console.log(`✅ بيانات الصف ${grade} موجودة في daily_stats`);
                         this.saveToCache(cacheKey, data, this.cacheConfig.ttl.grades);
                         return data;
                     }
                     
                     // إذا لم تكن موجودة، حساب من exam_results
+                    console.log(`📊 حساب إحصائيات الصف ${grade} من exam_results`);
                     const [resultsSnapshot, studentsSnapshot] = await Promise.all([
                         this.db.collection('exam_results')
                             .where('grade', '==', grade)
@@ -1338,41 +1460,70 @@
                 }
             }
             
+            // 🔥 **الإصلاح الحاسم: حساب المواد اليومية**
             getSubjectByDate(dateStr) {
-                const date = new Date(dateStr);
-                const day = date.getDay(); // 0: الأحد، 1: الإثنين، إلخ
-                
-                const subjectsByDay = {
-                    0: 'arabic',    // الأحد
-                    1: 'english',   // الإثنين
-                    2: 'math',      // الثلاثاء
-                    3: 'science',   // الأربعاء
-                    4: 'studies'    // الخميس
-                };
-                
-                return subjectsByDay[day] || 'arabic';
+                try {
+                    const date = new Date(dateStr);
+                    if (isNaN(date.getTime())) {
+                        console.warn('⚠️ تاريخ غير صالح:', dateStr);
+                        return 'arabic';
+                    }
+                    
+                    const day = date.getDay(); // 0: الأحد، 1: الإثنين، ...، 6: السبت
+                    
+                    // توزيع المواد على أيام الأسبوع (مطابق للصفحة الرئيسية)
+                    const subjectsByDay = [
+                        'arabic',    // الأحد (0)
+                        'english',   // الإثنين (1)
+                        'math',      // الثلاثاء (2)
+                        'science',   // الأربعاء (3)
+                        'studies',   // الخميس (4)
+                        'arabic',    // الجمعة (5) - مراجعة
+                        'arabic'     // السبت (6) - إجازة أو مراجعة
+                    ];
+                    
+                    if (day >= 0 && day < subjectsByDay.length) {
+                        return subjectsByDay[day];
+                    } else {
+                        console.warn(`⚠️ يوم غير معتاد: ${day}، العودة للعربية`);
+                        return 'arabic';
+                    }
+                } catch (error) {
+                    console.error('❌ خطأ في تحديد المادة:', error);
+                    return 'arabic'; // قيمة افتراضية آمنة
+                }
             }
             
             calculateGradeStats(resultsSnapshot, studentsSnapshot, grade) {
                 const totalStudents = studentsSnapshot.size;
                 const attempted = resultsSnapshot.size;
-                const notAttempted = totalStudents - attempted;
+                const notAttempted = Math.max(0, totalStudents - attempted);
                 const attemptedPercentage = totalStudents > 0 ? 
                     Math.round((attempted / totalStudents) * 100) : 0;
                 
-                const scoreDistribution = { "10":0,"9":0,"8":0,"7":0,"6":0,"5":0,"4":0,"3":0,"2":0,"1":0,"0":0 };
+                const scoreDistribution = { 
+                    "10":0,"9":0,"8":0,"7":0,"6":0,"5":0,"4":0,"3":0,"2":0,"1":0,"0":0 
+                };
                 let perfectScores = 0;
                 let totalScore = 0;
                 
                 resultsSnapshot.forEach(doc => {
                     const result = doc.data();
                     const score = Math.round(result.score);
-                    scoreDistribution[score.toString()]++;
-                    totalScore += score;
-                    if (score === 10) perfectScores++;
+                    
+                    // التحقق من صحة الدرجة
+                    if (score >= 0 && score <= 10) {
+                        scoreDistribution[score.toString()]++;
+                        totalScore += score;
+                        if (score === 10) perfectScores++;
+                    } else {
+                        console.warn(`⚠️ درجة غير صحيحة للطالب: ${result.studentId}, الدرجة: ${score}`);
+                    }
                 });
                 
-                const averageScore = attempted > 0 ? (totalScore / attempted).toFixed(1) : 0;
+                // حساب المتوسط بشكل آمن
+                const averageScore = attempted > 0 ? 
+                    parseFloat((totalScore / attempted).toFixed(2)) : 0.0;
                 
                 const missingStudents = [];
                 const attemptedIds = new Set();
@@ -1399,7 +1550,7 @@
                     studentsNotAttempted: notAttempted,
                     attemptedPercentage: attemptedPercentage,
                     perfectScores: perfectScores,
-                    averageScore: parseFloat(averageScore),
+                    averageScore: averageScore,
                     scoreDistribution: scoreDistribution,
                     missingStudents: missingStudents,
                     subject: this.getSubjectByDate(this.selectedDate)
@@ -1412,6 +1563,14 @@
                 
                 const gradeName = this.gradeNames[grade];
                 const subjectName = this.getSubjectName(data.subject);
+                
+                // 🔥 **الإصلاح: تنسيق جميع الأرقام**
+                const totalStudents = this.formatNumber(data.totalStudents);
+                const attempted = this.formatNumber(data.studentsAttempted);
+                const absent = this.formatNumber(data.studentsNotAttempted);
+                const percentage = this.formatNumber(data.attemptedPercentage);
+                const average = this.formatNumber(data.averageScore, 2);
+                const perfect = this.formatNumber(data.perfectScores);
                 
                 let html = `
                     <div style="margin-bottom: 30px;">
@@ -1431,7 +1590,7 @@
                                 <i class="fas fa-users" style="color: var(--grade${grade});"></i>
                             </div>
                             <div class="grade-stat-value" style="color: var(--grade${grade});">
-                                ${this.formatNumber(data.totalStudents)}
+                                ${totalStudents}
                             </div>
                             <div class="grade-stat-subtitle">عدد الطلاب المسجلين</div>
                         </div>
@@ -1442,9 +1601,9 @@
                                 <i class="fas fa-check-circle" style="color: var(--success);"></i>
                             </div>
                             <div class="grade-stat-value" style="color: var(--success);">
-                                ${data.attemptedPercentage}%
+                                ${percentage}%
                             </div>
-                            <div class="grade-stat-subtitle">${data.studentsAttempted} من ${data.totalStudents}</div>
+                            <div class="grade-stat-subtitle">${attempted} من ${totalStudents}</div>
                         </div>
                         
                         <div class="grade-stat-card" style="border-left-color: var(--danger);">
@@ -1453,7 +1612,7 @@
                                 <i class="fas fa-times-circle" style="color: var(--danger);"></i>
                             </div>
                             <div class="grade-stat-value" style="color: var(--danger);">
-                                ${this.formatNumber(data.studentsNotAttempted)}
+                                ${absent}
                             </div>
                             <div class="grade-stat-subtitle">الطلاب المتغيبين</div>
                         </div>
@@ -1464,7 +1623,7 @@
                                 <i class="fas fa-chart-bar" style="color: var(--warning);"></i>
                             </div>
                             <div class="grade-stat-value" style="color: var(--warning);">
-                                ${data.averageScore}
+                                ${average}
                             </div>
                             <div class="grade-stat-subtitle">متوسط الدرجات</div>
                         </div>
@@ -1475,7 +1634,7 @@
                                 <i class="fas fa-star" style="color: var(--accent);"></i>
                             </div>
                             <div class="grade-stat-value" style="color: var(--accent);">
-                                ${this.formatNumber(data.perfectScores)}
+                                ${perfect}
                             </div>
                             <div class="grade-stat-subtitle">الطلاب الحاصلين على 10/10</div>
                         </div>
@@ -1553,7 +1712,7 @@
                         <div class="${boxClass}">
                             <div class="score-value">${score}</div>
                             <div class="score-label">درجة</div>
-                            <div class="score-count">${count}</div>
+                            <div class="score-count">${this.formatNumber(count)}</div>
                         </div>
                     `;
                 }
@@ -1583,7 +1742,11 @@
                 );
                 
                 const subjectsData = await Promise.all(promises);
-                this.saveToCache(cacheKey, subjectsData, this.cacheConfig.ttl.subjects);
+                
+                // حفظ فقط إذا كانت هناك بيانات
+                if (subjectsData.some(data => data.totalStudents > 0)) {
+                    this.saveToCache(cacheKey, subjectsData, this.cacheConfig.ttl.subjects);
+                }
                 
                 return subjectsData;
             }
@@ -1614,13 +1777,16 @@
                         
                         snapshot.forEach(doc => {
                             const result = doc.data();
-                            totalScore += result.score;
-                            if (result.score === 10) perfectScores++;
+                            const score = Math.round(result.score);
+                            if (score >= 0 && score <= 10) {
+                                totalScore += score;
+                                if (score === 10) perfectScores++;
+                            }
                         });
                     });
                     
                     const averageScore = totalAttempted > 0 ? 
-                        (totalScore / totalAttempted).toFixed(1) : 0;
+                        parseFloat((totalScore / totalAttempted).toFixed(2)) : 0.0;
                     
                     const attendanceRate = totalStudents > 0 ?
                         Math.round((totalAttempted / totalStudents) * 100) : 0;
@@ -1631,7 +1797,7 @@
                         totalStudents: totalStudents,
                         totalAttempted: totalAttempted,
                         attendanceRate: attendanceRate,
-                        averageScore: parseFloat(averageScore),
+                        averageScore: averageScore,
                         perfectScores: perfectScores
                     };
                 } catch (error) {
@@ -1642,11 +1808,20 @@
             
             async getGradeStudentsCount(grade) {
                 try {
+                    const cacheKey = `students_count_${grade}`;
+                    const cached = this.getFromCache(cacheKey);
+                    
+                    if (cached) return cached;
+                    
                     const snapshot = await this.db.collection('students')
                         .where('grade', '==', grade)
                         .where('isActive', '==', true)
                         .get();
-                    return snapshot.size;
+                    
+                    const count = snapshot.size;
+                    this.saveToCache(cacheKey, count, this.cacheConfig.ttl.dailyStats);
+                    
+                    return count;
                 } catch (error) {
                     return 0;
                 }
@@ -1659,7 +1834,7 @@
                     totalStudents: 0,
                     totalAttempted: 0,
                     attendanceRate: 0,
-                    averageScore: 0,
+                    averageScore: 0.0,
                     perfectScores: 0
                 };
             }
@@ -1671,6 +1846,13 @@
                 let html = '';
                 
                 subjectsData.forEach(data => {
+                    // 🔥 **الإصلاح: تنسيق الأرقام**
+                    const attendanceRate = this.formatNumber(data.attendanceRate);
+                    const averageScore = this.formatNumber(data.averageScore, 2);
+                    const perfectScores = this.formatNumber(data.perfectScores);
+                    const attempted = this.formatNumber(data.totalAttempted);
+                    const total = this.formatNumber(data.totalStudents);
+                    
                     html += `
                         <div class="subject-card ${data.subject}">
                             <div class="subject-icon">
@@ -1680,21 +1862,21 @@
                             
                             <div class="subject-stats">
                                 <div class="subject-stat">
-                                    <span class="subject-stat-value">${data.attendanceRate}%</span>
+                                    <span class="subject-stat-value">${attendanceRate}%</span>
                                     <span class="subject-stat-label">حضور</span>
                                 </div>
                                 <div class="subject-stat">
-                                    <span class="subject-stat-value">${data.averageScore}</span>
+                                    <span class="subject-stat-value">${averageScore}</span>
                                     <span class="subject-stat-label">المتوسط</span>
                                 </div>
                                 <div class="subject-stat">
-                                    <span class="subject-stat-value">${data.perfectScores}</span>
+                                    <span class="subject-stat-value">${perfectScores}</span>
                                     <span class="subject-stat-label">كامل الدرجات</span>
                                 </div>
                             </div>
                             
                             <div style="margin-top: 15px; font-size: 0.85rem; color: var(--text-light);">
-                                ${data.totalAttempted}/${data.totalStudents} طالب
+                                ${attempted}/${total} طالب
                             </div>
                         </div>
                     `;
@@ -1711,7 +1893,8 @@
                 
                 gradesData.forEach(grade => {
                     const color = this.getGradeColor(grade.grade);
-                    const width = Math.min(grade.attemptedPercentage, 100);
+                    const width = Math.min(grade.attemptedPercentage || 0, 100);
+                    const percentage = this.formatNumber(grade.attemptedPercentage || 0);
                     
                     html += `
                         <div class="chart-bar">
@@ -1724,7 +1907,7 @@
                                 </div>
                             </div>
                             <div class="chart-value" style="color: ${color};">
-                                ${grade.attemptedPercentage}%
+                                ${percentage}%
                             </div>
                         </div>
                     `;
@@ -1767,14 +1950,28 @@
             }
             
             setupEventListeners() {
-                document.getElementById('selectedDate').addEventListener('change', (e) => {
-                    this.selectedDate = e.target.value;
-                    this.onDateChange();
-                });
+                const dateInput = document.getElementById('selectedDate');
+                if (dateInput) {
+                    dateInput.addEventListener('change', (e) => {
+                        const newDate = e.target.value;
+                        if (this.isValidDate(newDate)) {
+                            this.selectedDate = newDate;
+                            this.onDateChange();
+                        } else {
+                            this.showAlert('تاريخ غير صالح', 'error');
+                            dateInput.value = this.selectedDate;
+                        }
+                    });
+                }
             }
             
             onDateChange() {
-                document.getElementById('reportDate').textContent = this.formatDate(this.selectedDate);
+                // تحديث نص التاريخ في التقرير
+                const reportDateElement = document.getElementById('reportDate');
+                if (reportDateElement) {
+                    reportDateElement.textContent = this.formatDate(this.selectedDate);
+                }
+                
                 this.refreshAllData();
             }
             
@@ -1784,6 +1981,14 @@
                 try {
                     // مسح الكاش للتاريخ الجديد
                     this.clearCacheForDate(this.selectedDate);
+                    
+                    // إعادة تعيين حالة تحميل التبويبات
+                    this.grades.forEach(grade => {
+                        const contentDiv = document.getElementById(`grade${grade}Content`);
+                        if (contentDiv) {
+                            contentDiv.dataset.loaded = 'false';
+                        }
+                    });
                     
                     // إعادة تحميل جميع البيانات
                     await Promise.all([
@@ -1808,38 +2013,44 @@
             }
             
             clearCacheForDate(date) {
-                const keys = [
-                    `overview_${date}`,
-                    `subjects_${date}`
-                ];
-                
-                keys.forEach(key => {
-                    this.cache.memory.delete(this.cache.localStoragePrefix + key);
-                    localStorage.removeItem(this.cache.localStoragePrefix + key);
-                });
-                
-                this.grades.forEach(grade => {
-                    const key = `grade_${grade}_${date}`;
-                    this.cache.memory.delete(this.cache.localStoragePrefix + key);
-                    localStorage.removeItem(this.cache.localStoragePrefix + key);
-                });
+                try {
+                    const keys = [
+                        `overview_${date}`,
+                        `subjects_${date}`
+                    ];
+                    
+                    keys.forEach(key => {
+                        this.cache.memory.delete(this.cache.localStoragePrefix + key);
+                        localStorage.removeItem(this.cache.localStoragePrefix + key);
+                    });
+                    
+                    this.grades.forEach(grade => {
+                        const key = `grade_${grade}_${date}`;
+                        this.cache.memory.delete(this.cache.localStoragePrefix + key);
+                        localStorage.removeItem(this.cache.localStoragePrefix + key);
+                    });
+                    
+                    console.log(`🧹 تم تنظيف كاش تاريخ ${date}`);
+                } catch (error) {
+                    console.warn('⚠️ خطأ في تنظيف الكاش:', error);
+                }
             }
             
             // ===== نظام الكاش =====
             getFromCache(key) {
                 const fullKey = this.cache.localStoragePrefix + key;
                 
-                // البحث في الذاكرة أولاً
-                if (this.cache.memory.has(fullKey)) {
-                    const item = this.cache.memory.get(fullKey);
-                    if (Date.now() - item.timestamp < item.ttl) {
-                        return item.data;
-                    }
-                    this.cache.memory.delete(fullKey);
-                }
-                
-                // البحث في localStorage
                 try {
+                    // البحث في الذاكرة أولاً
+                    if (this.cache.memory.has(fullKey)) {
+                        const item = this.cache.memory.get(fullKey);
+                        if (Date.now() - item.timestamp < item.ttl) {
+                            return item.data;
+                        }
+                        this.cache.memory.delete(fullKey);
+                    }
+                    
+                    // البحث في localStorage
                     const stored = localStorage.getItem(fullKey);
                     if (stored) {
                         const item = JSON.parse(stored);
@@ -1858,29 +2069,34 @@
             
             saveToCache(key, data, ttl) {
                 const fullKey = this.cache.localStoragePrefix + key;
-                const item = {
-                    data: data,
-                    timestamp: Date.now(),
-                    ttl: ttl || 5 * 60 * 1000
-                };
-                
-                this.cache.memory.set(fullKey, item);
                 
                 try {
+                    const item = {
+                        data: data,
+                        timestamp: Date.now(),
+                        ttl: ttl || 5 * 60 * 1000
+                    };
+                    
+                    this.cache.memory.set(fullKey, item);
                     localStorage.setItem(fullKey, JSON.stringify(item));
+                    
                 } catch (e) {
                     console.warn('⚠️ خطأ في حفظ الكاش:', e);
                 }
             }
             
-            // ===== دوال المساعدة =====
+            // ===== دوال المساعدة المحسنة =====
             showLoading(message) {
-                document.getElementById('loadingText').textContent = message;
-                document.getElementById('loadingOverlay').style.display = 'flex';
+                const overlay = document.getElementById('loadingOverlay');
+                const text = document.getElementById('loadingText');
+                
+                if (overlay) overlay.style.display = 'flex';
+                if (text) text.textContent = message;
             }
             
             hideLoading() {
-                document.getElementById('loadingOverlay').style.display = 'none';
+                const overlay = document.getElementById('loadingOverlay');
+                if (overlay) overlay.style.display = 'none';
             }
             
             showAlert(message, type = 'info') {
@@ -1898,6 +2114,9 @@
                     box-shadow: var(--shadow-lg);
                     z-index: 1000;
                     animation: slideIn 0.5s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
                 `;
                 
                 alert.innerHTML = `
@@ -1916,27 +2135,64 @@
             }
             
             formatDate(dateStr) {
-                const date = new Date(dateStr);
-                const today = new Date();
-                const yesterday = new Date(today);
-                yesterday.setDate(yesterday.getDate() - 1);
-                
-                if (date.toDateString() === today.toDateString()) {
-                    return 'اليوم';
-                } else if (date.toDateString() === yesterday.toDateString()) {
-                    return 'الأمس';
+                try {
+                    const date = new Date(dateStr);
+                    const today = new Date();
+                    const yesterday = new Date(today);
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    
+                    if (date.toDateString() === today.toDateString()) {
+                        return 'اليوم';
+                    } else if (date.toDateString() === yesterday.toDateString()) {
+                        return 'الأمس';
+                    }
+                    
+                    return date.toLocaleDateString('ar-EG', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                } catch (error) {
+                    return dateStr;
                 }
-                
-                return date.toLocaleDateString('ar-EG', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
             }
             
-            formatNumber(num) {
-                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            // 🔥 **الإصلاح: دالة formatNumber آمنة ومحسنة**
+            formatNumber(num, decimals = 0) {
+                try {
+                    if (num == null || num === undefined || num === '') {
+                        return "0" + (decimals > 0 ? "." + "0".repeat(decimals) : "");
+                    }
+                    
+                    // تحويل النص إلى رقم
+                    const number = typeof num === 'string' ? parseFloat(num) : num;
+                    
+                    // التحقق من أن الرقم صحيح
+                    if (isNaN(number) || !isFinite(number)) {
+                        return "0" + (decimals > 0 ? "." + "0".repeat(decimals) : "");
+                    }
+                    
+                    // تنسيق الكسور العشرية
+                    let formatted;
+                    if (decimals > 0) {
+                        formatted = number.toFixed(decimals);
+                    } else {
+                        formatted = Math.round(number).toString();
+                    }
+                    
+                    // إضافة فواصل للألوف
+                    if (Math.abs(number) >= 1000) {
+                        const parts = formatted.split('.');
+                        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                        formatted = parts.join('.');
+                    }
+                    
+                    return formatted;
+                } catch (error) {
+                    console.warn('⚠️ خطأ في تنسيق الرقم:', num, error);
+                    return "0" + (decimals > 0 ? "." + "0".repeat(decimals) : "");
+                }
             }
         }
         
@@ -1955,28 +2211,35 @@
         
         // ===== دوال الواجهة =====
         function loadData() {
-            dailyStatsSystem.onDateChange();
+            if (dailyStatsSystem) {
+                dailyStatsSystem.onDateChange();
+            }
         }
         
         function refreshData() {
-            dailyStatsSystem.refreshAllData();
+            if (dailyStatsSystem) {
+                dailyStatsSystem.refreshAllData();
+            }
         }
         
         function compareWithYesterday() {
+            if (!dailyStatsSystem) return;
+            
             const today = new Date(dailyStatsSystem.selectedDate);
             const yesterday = new Date(today);
             yesterday.setDate(yesterday.getDate() - 1);
             
             const yesterdayStr = yesterday.toISOString().split('T')[0];
-            window.location.href = `?date=${yesterdayStr}&compare=true`;
+            window.location.href = `daily_stats.html?date=${yesterdayStr}&compare=true`;
         }
         
         function exportToPDF() {
-            dailyStatsSystem.showAlert('جاري تحضير ملف PDF...', 'info');
-            setTimeout(() => {
-                dailyStatsSystem.showAlert('تم تحضير ملف PDF بنجاح', 'success');
-                // هنا سيتم إضافة منطق إنشاء PDF
-            }, 1500);
+            if (dailyStatsSystem) {
+                dailyStatsSystem.showAlert('جاري تحضير ملف PDF...', 'info');
+                setTimeout(() => {
+                    dailyStatsSystem.showAlert('تم تحضير ملف PDF بنجاح', 'success');
+                }, 1500);
+            }
         }
         
         function generatePDFReport() {
@@ -1984,11 +2247,12 @@
         }
         
         function exportToExcel() {
-            dailyStatsSystem.showAlert('جاري تحضير ملف Excel...', 'info');
-            setTimeout(() => {
-                dailyStatsSystem.showAlert('تم تحضير ملف Excel بنجاح', 'success');
-                // هنا سيتم إضافة منطق إنشاء Excel
-            }, 1500);
+            if (dailyStatsSystem) {
+                dailyStatsSystem.showAlert('جاري تحضير ملف Excel...', 'info');
+                setTimeout(() => {
+                    dailyStatsSystem.showAlert('تم تحضير ملف Excel بنجاح', 'success');
+                }, 1500);
+            }
         }
         
         function printReport() {
